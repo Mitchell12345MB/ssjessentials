@@ -64,6 +64,7 @@ permissions:
 | `/nick <nickname>` | `/nick <player> <nickname>` | Change your nickname | `ssjessentials.nick` | `ssjessentials.nick.others` |
 | `/gm <0/1/2/3>` | `/gm <player> <0/1/2/3>` | Change gamemode | `ssjessentials.gamemode` | `ssjessentials.gamemode.others` |
 | `/freeze` | `/freeze <player>` | Freeze player | `ssjessentials.freeze`| `ssjessentials.freeze.others` |
+| `/vanish` | `/vanish <player>` | Toggle Vanish | `ssjessentials.vanish`| `ssjessentials.vanish.others` |
 
 ## 🔧 Configuration
 Create or modify `plugins/SSJEssentials/config.yml`:
