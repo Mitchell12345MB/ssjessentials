@@ -1,0 +1,60 @@
+name: SSJEssentials
+version: 1
+main: com.sausaliens.SSJEssentials
+api-version: 1.17
+prefix: SSJEssentials
+authors: [ SauSAliens ]
+description: Simple essentials plugin
+commands:
+  fly:
+    description: Toggles flight mode
+    usage: /<command> [player]
+    permission: ssjessentials.fly
+  vanish:
+    description: Toggles visibility
+    usage: /<command> [player]
+    permission: ssjessentials.vanish
+  heal:
+    description: Heals the player
+    usage: /<command> [player]
+    permission: ssjessentials.heal
+  feed:
+    description: Feeds the player
+    usage: /<command> [player]
+    permission: ssjessentials.feed
+  freeze:
+    description: Freezes or unfreezes a player
+    usage: /<command> [player]
+    permission: ssjessentials.freeze
+
+permissions:
+  ssjessentials.fly:
+    description: Allows player to toggle flight mode for themselves
+    default: op
+  ssjessentials.fly.others:
+    description: Allows player to toggle flight mode for others
+    default: op
+  ssjessentials.vanish:
+    description: Allows player to toggle visibility for themselves
+    default: op
+  ssjessentials.vanish.others:
+    description: Allows player to toggle visibility for others
+    default: op
+  ssjessentials.heal:
+    description: Allows player to heal themselves
+    default: op
+  ssjessentials.heal.others:
+    description: Allows player to heal others
+    default: op
+  ssjessentials.feed:
+    description: Allows player to feed themselves
+    default: op
+  ssjessentials.feed.others:
+    description: Allows player to feed others
+    default: op
+  ssjessentials.freeze:
+    description: Allows player to freeze themselves
+    default: op
+  ssjessentials.freeze.others:
+    description: Allows player to freeze others
+    default: op
