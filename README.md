@@ -96,4 +96,3 @@ If you'd like to use this plugin, please contact the developer for permission.
 ## 🙏 Acknowledgments
 
 - SSJ Plugin - [Link to SSJ Plugin]
-- Other acknowledgments
