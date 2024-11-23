@@ -56,7 +56,7 @@ permissions:
 ### 🎮 Commands
 
 | Command | Command Other | Description | Permission One | Permission Two | Permission Three |
-|---------|-------------|------------|
+|---------|-------------|------------|------------|------------|------------|
 | `/fly` | `/fly <player>` | Toggle flight mode | `ssjessentials.fly` | `ssjessentials.fly.others` |
 | `/feed` | `/feed <player>` | Restore hunger bar | `ssjessentials.feed` | `ssjessentials.feed.others` |
 | `/heal` | `/heal <player>` | Restore health | `ssjessentials.heal` | `ssjessentials.heal.others` |
