@@ -89,6 +89,8 @@ tempban:
   max-duration: 30
   # Whether to broadcast tempbans
   broadcast: true
+```
+```yaml
 
 # Player Settings
 
