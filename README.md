@@ -93,11 +93,6 @@ This project is currently unlicensed. This means that while the code is publicly
 
 If you'd like to use this plugin, please contact the developer for permission.
 
-> **Note**: Consider adding a license to protect your work and clarify how others can use it. Common options include:
-> - MIT License (very permissive)
-> - GPL-3.0 (ensures derivatives stay open source)
-> - Apache 2.0 (good for commercial use)
-
 ## 🙏 Acknowledgments
 
 - SSJ Plugin - [Link to SSJ Plugin]
