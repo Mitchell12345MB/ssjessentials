@@ -39,6 +39,9 @@ permissions:
   ssj.gamemode:
     description: Allows player to change their gamemode
     default: op
+  ssj.freeze:
+    description: Allows player to freeze another player
+    default: op
 ```
 
 ### 🎮 Commands
@@ -51,6 +54,7 @@ permissions:
 | `/tempban <player> <duration> [reason]` | Temporarily ban a player | `ssj.tempban` |
 | `/nick <nickname>` | Change your nickname | `ssj.nick` |
 | `/gm <0/1/2/3>` | Change gamemode | `ssj.gamemode` |
+| `/freeze <player` | Freeze player | `ssj.freeze`|
 
 ## 🔧 Configuration
 Create or modify `plugins/SSJEssentials/config.yml`:
@@ -85,6 +89,17 @@ tempban:
   max-duration: 30
   # Whether to broadcast tempbans
   broadcast: true
+
+# Player Settings
+
+uuid: <player UUID>
+
+name: <playername>
+
+flying: false
+
+vanished: false
+
 ```
 
 ## 📝 License
