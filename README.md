@@ -60,7 +60,7 @@ permissions:
 | `/fly` | `/fly <player>` | Toggle flight mode | `ssjessentials.fly` | `ssjessentials.fly.others` |
 | `/feed` | `/feed <player>` | Restore hunger bar | `ssjessentials.feed` | `ssjessentials.feed.others` |
 | `/heal` | `/heal <player>` | Restore health | `ssjessentials.heal` | `ssjessentials.heal.others` |
-| `/tempban <player> <duration> [reason]` | Temporarily ban a player | `ssjessentials.tempban` |
+| `/tempban <player> <duration> [reason]` | `None` | Temporarily ban a player | `ssjessentials.tempban` |
 | `/nick <nickname>` | `/nick <player> <nickname>` | Change your nickname | `ssjessentials.nick` | `ssjessentials.nick.others` |
 | `/gm <0/1/2/3>` | `/gm <player> <0/1/2/3>` | Change gamemode | `ssjessentials.gamemode` | `ssjessentials.gamemode.others` |
 | `/freeze` | `/freeze <player>` | Freeze player | `ssjessentials.freeze`| `ssjessentials.freeze.others` |
