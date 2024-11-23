@@ -21,26 +21,35 @@ A custom plugin collection designed to enhance the SSJ Plugin functionality.
 
 ```yaml
 permissions:
-  ssj.fly:
-    description: Allows player to use /fly command
+  ssjessentials.fly:
+    description: Allows player to toggle flight mode for themselves
     default: op
-  ssj.feed:
-    description: Allows player to use /feed command
+  ssjessentials.fly.others:
+    description: Allows player to toggle flight mode for others
     default: op
-  ssj.heal:
-    description: Allows player to use /heal command
+  ssjessentials.vanish:
+    description: Allows player to toggle visibility for themselves
     default: op
-  ssj.tempban:
-    description: Allows player to temporarily ban other players
+  ssjessentials.vanish.others:
+    description: Allows player to toggle visibility for others
     default: op
-  ssj.nick:
-    description: Allows player to change their nickname
+  ssjessentials.heal:
+    description: Allows player to heal themselves
     default: op
-  ssj.gamemode:
-    description: Allows player to change their gamemode
+  ssjessentials.heal.others:
+    description: Allows player to heal others
     default: op
-  ssj.freeze:
-    description: Allows player to freeze another player
+  ssjessentials.feed:
+    description: Allows player to feed themselves
+    default: op
+  ssjessentials.feed.others:
+    description: Allows player to feed others
+    default: op
+  ssjessentials.freeze:
+    description: Allows player to freeze themselves
+    default: op
+  ssjessentials.freeze.others:
+    description: Allows player to freeze others
     default: op
 ```
 
@@ -48,13 +57,13 @@ permissions:
 
 | Command | Description | Permission |
 |---------|-------------|------------|
-| `/fly` | Toggle flight mode | `ssj.fly` |
-| `/feed` | Restore hunger bar | `ssj.feed` |
-| `/heal` | Restore health | `ssj.heal` |
-| `/tempban <player> <duration> [reason]` | Temporarily ban a player | `ssj.tempban` |
-| `/nick <nickname>` | Change your nickname | `ssj.nick` |
-| `/gm <0/1/2/3>` | Change gamemode | `ssj.gamemode` |
-| `/freeze <player` | Freeze player | `ssj.freeze`|
+| `/fly` | `/fly <player>` | Toggle flight mode | `ssjessentials.fly` | `ssjessentials.fly.others` |
+| `/feed` | `/feed <player>` | Restore hunger bar | `ssjessentials.feed` | `ssjessentials.feed.others` |
+| `/heal` | `/heal <player>` | Restore health | `ssjessentials.heal` | `ssjessentials.heal.others` |
+| `/tempban <player> <duration> [reason]` | Temporarily ban a player | `ssjessentials.tempban` |
+| `/nick <nickname>` | `/nick <player> <nickname>` | Change your nickname | `ssjessentials.nick` | `ssjessentials.nick.others` |
+| `/gm <0/1/2/3>` | `/gm <player> <0/1/2/3>` | Change gamemode | `ssjessentials.gamemode` | `ssjessentials.gamemode.others` |
+| `/freeze` | `/freeze <player>` | Freeze player | `ssjessentials.freeze`| `ssjessentials.freeze.others` |
 
 ## 🔧 Configuration
 Create or modify `plugins/SSJEssentials/config.yml`:
@@ -90,6 +99,9 @@ tempban:
   # Whether to broadcast tempbans
   broadcast: true
 ```
+
+Modify `plugins/SSJEssentials/PlayerData/<playername>.yml`:
+
 ```yaml
 
 # Player Settings
