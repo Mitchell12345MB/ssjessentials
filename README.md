@@ -54,8 +54,9 @@ permissions:
   ssjessentials.reload:
     description: Allows player to reload the plugin configuration
     default: op
-  ssjessentials.banlist
+  ssjessentials.banlist:
     description: Allows a player to see the banned (and tempbanned) players on the server
+    default: op
 ```
 
 ### 🎮 Commands
