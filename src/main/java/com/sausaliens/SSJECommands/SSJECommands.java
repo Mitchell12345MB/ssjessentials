@@ -8,6 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.GameMode;
 import com.sausaliens.SSJEssentials;
 import com.sausaliens.SSJEConfig.SSJConfigs;
+import java.util.Arrays;
+import java.util.Date;
+import org.bukkit.ChatColor;
+import java.util.Set;
+import org.bukkit.BanList;
+import org.bukkit.BanEntry;
+import java.text.SimpleDateFormat;
 
 public class SSJECommands implements CommandExecutor {
 
@@ -19,6 +26,14 @@ public class SSJECommands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("reload")) {
+            return handleReload(sender);
+        }
+
+        if (command.getName().equalsIgnoreCase("banlist")) {
+            return handleBanCommand(sender, args);
+        }
+        
         if (!(sender instanceof Player)) {
             sender.sendMessage("§cThis command can only be used by players!");
             return true;
@@ -26,24 +41,26 @@ public class SSJECommands implements CommandExecutor {
 
         Player player = (Player) sender;
         String cmd = command.getName().toLowerCase();
-        Player target = args.length > 0 ? Bukkit.getPlayer(args[0]) : player;
-
-        if (args.length > 0 && target == null) {
-            player.sendMessage("§cPlayer not found!");
-            return true;
-        }
 
         switch (cmd) {
             case "fly":
-                return handleFly(player, target);
+                return handleFly(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
             case "vanish":
-                return handleVanish(player, target);
+                return handleVanish(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
             case "heal":
-                return handleHeal(player, target);
+                return handleHeal(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
             case "feed":
-                return handleFeed(player, target);
+                return handleFeed(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
             case "freeze":
-                return handleFreeze(player, target);
+                return handleFreeze(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
+            case "tempban":
+                return handleTempban(player, args);
+            case "nick":
+                return handleNick(player, args);
+            case "gm":
+                return handleGamemode(player, args);
+            case "//ban":
+                return handleBanCommand(sender, args);
             default:
                 return false;
         }
@@ -166,6 +183,212 @@ public class SSJECommands implements CommandExecutor {
                 "§aFroze " + target.getName() + "!" : 
                 "§aUnfroze " + target.getName() + "!");
         }
+        return true;
+    }
+
+    private boolean handleTempban(Player sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.tempban")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (args.length < 2) {
+            sender.sendMessage("§cUsage: /tempban <player> <duration> [reason]");
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        String duration = args[1];
+        String reason = args.length > 2 ? String.join(" ", Arrays.copyOfRange(args, 2, args.length)) 
+                                      : ssjEssentials.getConfig().getString("tempban.default-reason");
+
+        // Parse duration (you might want to add more sophisticated duration parsing)
+        long durationInMillis = parseDuration(duration);
+        if (durationInMillis <= 0) {
+            sender.sendMessage("§cInvalid duration format!");
+            return true;
+        }
+
+        Date expiry = new Date(System.currentTimeMillis() + durationInMillis);
+        target.ban(reason, expiry, sender.getName(), true);
+        
+        if (ssjEssentials.getConfig().getBoolean("tempban.broadcast")) {
+            Bukkit.broadcastMessage("§c" + target.getName() + " has been temporarily banned for: " + reason);
+        }
+        
+        return true;
+    }
+
+    private boolean handleNick(Player sender, String[] args) {
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /nick [player] <nickname>");
+            return true;
+        }
+
+        Player target;
+        String nickname;
+
+        if (args.length > 1 && sender.hasPermission("ssjessentials.nick.others")) {
+            target = Bukkit.getPlayer(args[0]);
+            nickname = args[1];
+        } else {
+            target = sender;
+            nickname = args[0];
+        }
+
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        if (!sender.hasPermission("ssjessentials.nick" + (sender == target ? "" : ".others"))) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        int maxLength = ssjEssentials.getConfig().getInt("nickname.max-length", 16);
+        if (nickname.length() > maxLength) {
+            sender.sendMessage("§cNickname too long! Maximum length is " + maxLength + " characters.");
+            return true;
+        }
+
+        if (ssjEssentials.getConfig().getBoolean("nickname.allow-colors", true)) {
+            nickname = ChatColor.translateAlternateColorCodes('&', nickname);
+        }
+
+        target.setDisplayName(nickname);
+        target.setPlayerListName(nickname);
+        
+        target.sendMessage("§aYour nickname has been changed to: " + nickname);
+        if (sender != target) {
+            sender.sendMessage("§aChanged " + target.getName() + "'s nickname to: " + nickname);
+        }
+        
+        return true;
+    }
+
+    private boolean handleGamemode(Player sender, String[] args) {
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /gm <0/1/2/3> [player]");
+            return true;
+        }
+
+        Player target;
+        String mode = args[0];
+
+        if (args.length > 1 && sender.hasPermission("ssjessentials.gamemode.others")) {
+            target = Bukkit.getPlayer(args[1]);
+        } else {
+            target = sender;
+        }
+
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        if (!sender.hasPermission("ssjessentials.gamemode" + (sender == target ? "" : ".others"))) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        GameMode gameMode;
+        switch (mode) {
+            case "0":
+                gameMode = GameMode.SURVIVAL;
+                break;
+            case "1":
+                gameMode = GameMode.CREATIVE;
+                break;
+            case "2":
+                gameMode = GameMode.ADVENTURE;
+                break;
+            case "3":
+                gameMode = GameMode.SPECTATOR;
+                break;
+            default:
+                sender.sendMessage("§cInvalid gamemode! Use 0/1/2/3");
+                return true;
+        }
+
+        target.setGameMode(gameMode);
+        
+        // Save the gamemode in player data
+        SSJConfigs.PlayerData playerData = ssjEssentials.getConfigs().getPlayerData(target);
+        playerData.setGameMode(gameMode);
+        ssjEssentials.getConfigs().savePlayerData(target);
+        
+        target.sendMessage("§aGamemode set to " + gameMode.toString().toLowerCase());
+        if (sender != target) {
+            sender.sendMessage("§aSet " + target.getName() + "'s gamemode to " + gameMode.toString().toLowerCase());
+        }
+        
+        return true;
+    }
+
+    private long parseDuration(String duration) {
+        try {
+            char unit = duration.charAt(duration.length() - 1);
+            int amount = Integer.parseInt(duration.substring(0, duration.length() - 1));
+            
+            return switch (Character.toLowerCase(unit)) {
+                case 'm' -> amount * 60L * 1000L;         // minutes
+                case 'h' -> amount * 60L * 60L * 1000L;   // hours
+                case 'd' -> amount * 24L * 60L * 60L * 1000L; // days
+                default -> -1L;
+            };
+        } catch (Exception e) {
+            return -1L;
+        }
+    }
+
+    private boolean handleReload(CommandSender sender) {
+        if (!sender.hasPermission("ssjessentials.reload")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        try {
+            ssjEssentials.reloadConfig();
+            sender.sendMessage("§aConfiguration reloaded successfully!");
+            return true;
+        } catch (Exception e) {
+            sender.sendMessage("§cError reloading configuration: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public boolean handleBanCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.banlist")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        @SuppressWarnings("rawtypes")
+        Set<BanEntry> banEntries = Bukkit.getBanList(BanList.Type.NAME).getBanEntries();
+        
+        if (banEntries.isEmpty()) {
+            sender.sendMessage("§aThere are no banned players.");
+            return true;
+        }
+
+        sender.sendMessage("§6Banned Players:");
+        for (@SuppressWarnings("rawtypes") BanEntry entry : banEntries) {
+            String expiry = entry.getExpiration() != null ? 
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(entry.getExpiration()) : 
+                "Permanent";
+                
+            sender.sendMessage(String.format("§e- %s §7(Until: %s)", 
+                entry.getTarget(), 
+                expiry));
+        }
+
         return true;
     }
 } 

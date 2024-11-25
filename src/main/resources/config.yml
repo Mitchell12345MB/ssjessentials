@@ -1,0 +1,28 @@
+settings:
+  # Prefix for plugin messages
+  prefix: "&7[&bSSJ&7] "
+  
+# Flight Settings
+flight:
+  # Maximum flight speed (1-10)
+  max-speed: 2
+  # Whether flight should be disabled on combat
+  disable-on-combat: true
+
+# Nickname Settings
+nickname:
+  # Maximum length for nicknames
+  max-length: 16
+  # Whether to allow color codes in nicknames
+  allow-colors: true
+  # Blocked words in nicknames
+  blocked-words: []
+
+# Tempban Settings
+tempban:
+  # Default ban reason if none provided
+  default-reason: "No reason specified"
+  # Maximum ban duration (in days)
+  max-duration: 30
+  # Whether to broadcast tempbans
+  broadcast: true

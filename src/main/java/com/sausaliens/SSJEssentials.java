@@ -8,6 +8,7 @@ import com.sausaliens.SSJEConfig.SSJConfigs;
 import com.sausaliens.SSJEListeners.PlayerFlightListener;
 import com.sausaliens.SSJEListeners.PlayerFreezeListener;
 import com.sausaliens.SSJEPlayerData.SSJEPlayerData;
+import com.sausaliens.SSJEListeners.SSJECommandListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,14 +33,20 @@ public class SSJEssentials extends JavaPlugin {
         getCommand("heal").setExecutor(commandExecutor);
         getCommand("feed").setExecutor(commandExecutor);
         getCommand("freeze").setExecutor(commandExecutor);
+        getCommand("reload").setExecutor(commandExecutor);
+        getCommand("banlist").setExecutor(commandExecutor);
 
         this.playerFlightListener = new PlayerFlightListener(this);
         getServer().getPluginManager().registerEvents(playerFlightListener, this);
 
         getServer().getPluginManager().registerEvents(new PlayerFreezeListener(this), this);
 
+        getServer().getPluginManager().registerEvents(new SSJECommandListener(this), this);
+
         // Initialize player data map
         this.playerDataMap = new HashMap<>();
+
+        saveDefaultConfig();
 
         getLogger().info("SSJEssentials has been enabled!");
     }
@@ -67,5 +74,10 @@ public class SSJEssentials extends JavaPlugin {
 
     public void removePlayerData(Player player) {
         playerDataMap.remove(player.getUniqueId());
+    }
+
+    public void reloadConfig() {
+        super.reloadConfig();
+        configs.reloadConfig();
     }
 }

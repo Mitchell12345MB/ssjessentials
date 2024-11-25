@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import com.sausaliens.SSJEssentials;
+import org.bukkit.GameMode;
 
 public class SSJConfigs {
     private final SSJEssentials plugin;
@@ -46,10 +47,13 @@ public class SSJConfigs {
         if (playerFile.exists()) {
             data.setFlying(config.getBoolean("flying", false));
             data.setVanished(config.getBoolean("vanished", false));
+            data.setFrozen(config.getBoolean("frozen", false));
+            String gameModeStr = config.getString("gamemode", "SURVIVAL");
+            data.setGameMode(GameMode.valueOf(gameModeStr));
         }
         
         playerData.put(player.getUniqueId(), data);
-        savePlayerData(player); // Create file if it doesn't exist
+        savePlayerData(player);
     }
 
     public void savePlayerData(Player player) {
@@ -62,6 +66,8 @@ public class SSJConfigs {
             config.set("name", player.getName());
             config.set("flying", data.isFlying());
             config.set("vanished", data.isVanished());
+            config.set("frozen", data.isFrozen());
+            config.set("gamemode", data.getGameMode().toString());
             
             try {
                 config.save(playerFile);
@@ -77,10 +83,24 @@ public class SSJConfigs {
         }
     }
 
+    public void reloadConfig() {
+        // Save current data
+        saveAllData();
+        
+        // Clear current data
+        playerData.clear();
+        
+        // Reload all online players' data
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            loadPlayerData(player);
+        }
+    }
+
     public class PlayerData {
         private boolean isFlying = false;
         private boolean isVanished = false;
         private boolean isFrozen = false;
+        private GameMode gameMode = GameMode.SURVIVAL;
 
         public boolean isFlying() {
             return isFlying;
@@ -104,6 +124,14 @@ public class SSJConfigs {
 
         public void setFrozen(boolean frozen) {
             isFrozen = frozen;
+        }
+
+        public GameMode getGameMode() {
+            return gameMode;
+        }
+
+        public void setGameMode(GameMode gameMode) {
+            this.gameMode = gameMode;
         }
     }
 } 

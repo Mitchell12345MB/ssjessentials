@@ -51,6 +51,11 @@ permissions:
   ssjessentials.freeze.others:
     description: Allows player to freeze others
     default: op
+  ssjessentials.reload:
+    description: Allows player to reload the plugin configuration
+    default: op
+  ssjessentials.banlist
+    description: Allows a player to see the banned (and tempbanned) players on the server
 ```
 
 ### 🎮 Commands
@@ -65,6 +70,8 @@ permissions:
 | `/gm <0/1/2/3>` | `/gm <player> <0/1/2/3>` | Change gamemode | `ssjessentials.gamemode` | `ssjessentials.gamemode.others` |
 | `/freeze` | `/freeze <player>` | Freeze player | `ssjessentials.freeze`| `ssjessentials.freeze.others` |
 | `/vanish` | `/vanish <player>` | Toggle Vanish | `ssjessentials.vanish`| `ssjessentials.vanish.others` |
+| `/reload` | `None` | Reloads the plugin | `ssjessentials.reload` | `None` |
+| `//ban list` | `/banlist` | Gives a list of banned players | `ssjessentials.banlist` | `None` |
 
 ## 🔧 Configuration
 Create or modify `plugins/SSJEssentials/config.yml`:
@@ -114,6 +121,8 @@ name: <playername>
 flying: false
 
 vanished: false
+
+gamemode: 'survival'
 
 ```
 

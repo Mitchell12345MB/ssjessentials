@@ -26,6 +26,26 @@ commands:
     description: Freezes or unfreezes a player
     usage: /<command> [player]
     permission: ssjessentials.freeze
+  tempban:
+    description: Temporarily bans a player
+    usage: /<command> <player> <duration> [reason]
+    permission: ssjessentials.tempban
+  nick:
+    description: Change nickname
+    usage: /<command> [player] <nickname>
+    permission: ssjessentials.nick
+  gm:
+    description: Change gamemode
+    usage: /<command> [player] <0/1/2/3>
+    permission: ssjessentials.gamemode
+  reload:
+    description: Reloads the plugin configuration
+    usage: /<command>
+    permission: ssjessentials.reload
+  banlist:
+    description: Shows list of banned players
+    usage: /<command>
+    permission: ssjessentials.banlist
 
 permissions:
   ssjessentials.fly:
@@ -57,4 +77,25 @@ permissions:
     default: op
   ssjessentials.freeze.others:
     description: Allows player to freeze others
+    default: op
+  ssjessentials.tempban:
+    description: Allows player to temporarily ban others
+    default: op
+  ssjessentials.nick:
+    description: Allows player to change their nickname
+    default: op
+  ssjessentials.nick.others:
+    description: Allows player to change others' nicknames
+    default: op
+  ssjessentials.gamemode:
+    description: Allows player to change their gamemode
+    default: op
+  ssjessentials.gamemode.others:
+    description: Allows player to change others' gamemode
+    default: op
+  ssjessentials.reload:
+    description: Allows player to reload the plugin configuration
+    default: op
+  ssjessentials.banlist:
+    description: Allows player to manage the ban list
     default: op

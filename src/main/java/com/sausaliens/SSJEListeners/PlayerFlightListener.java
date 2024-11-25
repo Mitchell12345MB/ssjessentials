@@ -78,15 +78,19 @@ public class PlayerFlightListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
+        
+        // Restore gamemode
+        player.setGameMode(playerData.getGameMode());
+        
+        // Restore flight status
         if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR) {
-            if (plugin.getConfigs().getPlayerData(player).isFlying()) {
+            if (playerData.isFlying()) {
                 player.setAllowFlight(true);
             } else {
                 player.setAllowFlight(false);
                 player.setFlying(false);
             }
         }
-        // Initialize player data
-        plugin.getPlayerData(player);
     }
 }
