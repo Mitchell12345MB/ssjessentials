@@ -54,6 +54,42 @@ commands:
     description: Unbans a banned player
     usage: /<command> <player>
     permission: ssjessentials.unban
+  spawn:
+    description: Teleports you or target player to the spawn point OR spawns a mob where you are standing or at a target player
+    usage: /<command> [player]
+    permission: ssjessentials.spawn
+  setspawn:
+    description: Sets the server's spawn point
+    usage: /<command>
+    permission: ssjessentials.setspawn
+  tpr:
+    description: Ask to teleport to another player
+    usage: /<command> <player>
+    permission: ssjessentials.tpr
+  tp:
+    description: Teleports to a target player or spawn or a player to another player or spawn if you are staff
+    usage: /<command> <player> OR <spawn> <player> OR <spawn>
+    permission: ssjessentials.tp.staff
+  tpraccept:
+    description: Accept a tp request from /tpr
+    usage: /<command>
+    permission: ssjessentials.tpr.accept
+  killall:
+    description: Kills all players and entitys, kills a target player, or kills an entity
+    usage: /<command> [player] [entity]
+    permission: ssjessentials.kill
+  kill:
+    description: Kills a target player or entity
+    usage: /<command> [player] [entity]
+    permission: ssjessentials.kill.player
+  ban:
+    description: Bans a target player
+    usage: /<command> <player>
+    permission: ssjessentials.ban
+  kick:
+    description: Kicks a target player
+    usage: /<command> <player>
+    permission: ssjessentials.kick
 
 permissions:
   ssjessentials.fly:
@@ -115,4 +151,43 @@ permissions:
     default: op
   ssjessentials.unban:
     description: Allows player to unban others
+    default: op
+  ssjessentials.spawn:
+    description: Allows player to spawn a mob
+    default: op
+  ssjessentials.spawn.mob:
+    description: Allows player to spawn a mob
+    default: op
+  ssjessentials.spawn.mob.tp:
+    description: Allows player to spawn a mob and teleport to it to a target player's location
+    default: op
+  ssjessentials.setspawn:
+    description: Allows player to set the server's spawn point
+    default: op
+  ssjessentials.tpr:
+    description: Allows player to ask to teleport to another player
+    default: op
+  ssjessentials.tp.staff:
+    description: Allows player to teleport to another player if you are staff
+    default: op
+  ssjessentials.tpr.accept:
+    description: Allows player to accept a tp request from /tpr
+    default: op
+  ssjessentials.kill:
+    description: Allows player to kill a target player or entity
+    default: op
+  ssjessentials.kill.all:
+    description: Allows player to kill all players and entitys
+    default: op
+  ssjessentials.kill.entitys:
+    description: Allows player to kill an entity
+    default: op
+  ssjessentials.ban:
+    description: Allows player to ban a target player
+    default: op
+  ssjessentials.staff:
+    description: Manage staff commands.
+    default: op
+  ssjessentials.kick:
+    description: Allows player to kick a target player
     default: op

@@ -10,6 +10,8 @@ import com.sausaliens.SSJEListeners.PlayerFreezeListener;
 import com.sausaliens.SSJEPlayerData.SSJEPlayerData;
 import com.sausaliens.SSJEListeners.SSJECommandListener;
 import com.sausaliens.SSJEListeners.PlayerJoinListener;
+import com.sausaliens.SSJEConfig.SpawnConfig;
+import com.sausaliens.SSJEManagers.TeleportManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,10 +26,15 @@ public class SSJEssentials extends JavaPlugin {
     // Add player data map
     private Map<UUID, SSJEPlayerData> playerDataMap;
 
+    private SpawnConfig spawnConfig;
+    private TeleportManager teleportManager;
+
     @Override
     public void onEnable() {
         this.configs = new SSJConfigs(this);
         this.commandExecutor = new SSJECommands(this);
+        this.spawnConfig = new SpawnConfig(this);
+        this.teleportManager = new TeleportManager(this);
 
         getCommand("fly").setExecutor(commandExecutor);
         getCommand("vanish").setExecutor(commandExecutor);
@@ -41,6 +48,15 @@ public class SSJEssentials extends JavaPlugin {
         getCommand("nick").setExecutor(commandExecutor);
         getCommand("gm").setExecutor(commandExecutor);
         getCommand("tempban").setExecutor(commandExecutor);
+        getCommand("spawn").setExecutor(commandExecutor);
+        getCommand("setspawn").setExecutor(commandExecutor);
+        getCommand("tpr").setExecutor(commandExecutor);
+        getCommand("tp").setExecutor(commandExecutor);
+        getCommand("tpraccept").setExecutor(commandExecutor);
+        getCommand("kill").setExecutor(commandExecutor);
+        getCommand("killall").setExecutor(commandExecutor);
+        getCommand("kick").setExecutor(commandExecutor);
+        getCommand("ban").setExecutor(commandExecutor);
 
         this.playerFlightListener = new PlayerFlightListener(this);
         getServer().getPluginManager().registerEvents(playerFlightListener, this);
@@ -87,5 +103,13 @@ public class SSJEssentials extends JavaPlugin {
     public void reloadConfig() {
         super.reloadConfig();
         configs.reloadConfig();
+    }
+
+    public SpawnConfig getSpawnConfig() {
+        return spawnConfig;
+    }
+
+    public TeleportManager getTeleportManager() {
+        return teleportManager;
     }
 }

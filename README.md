@@ -81,24 +81,71 @@ permissions:
   ssjessentials.unban:
     description: Allows player to unban others
     default: op
+  ssjessentials.spawn:
+    description: Allows player to spawn a mob
+    default: op
+  ssjessentials.spawn.mob:
+    description: Allows player to spawn a mob
+    default: op
+  ssjessentials.spawn.mob.tp:
+    description: Allows player to spawn a mob and teleport to it to a target player's location
+    default: op
+  ssjessentials.setspawn:
+    description: Allows player to set the server's spawn point
+    default: op
+  ssjessentials.tpr:
+    description: Allows player to ask to teleport to another player
+    default: op
+  ssjessentials.tp.staff:
+    description: Allows player to teleport to another player if you are staff
+    default: op
+  ssjessentials.tpr.accept:
+    description: Allows player to accept a tp request from /tpr
+    default: op
+  ssjessentials.kill:
+    description: Allows player to kill a target player or entity
+    default: op
+  ssjessentials.kill.all:
+    description: Allows player to kill all players and entitys
+    default: op
+  ssjessentials.kill.entitys:
+    description: Allows player to kill an entity
+    default: op
+  ssjessentials.ban:
+    description: Allows player to ban a target player
+    default: op
+  ssjessentials.staff:
+    description: Manage staff commands.
+    default: op
+  ssjessentials.kick:
+    description: Allows player to kick a target player
+    default: op
 ```
 
 ### 🎮 Commands
 
-| Command | Command Other | Description | Permission One | Permission Two |
-|-------------|-----------------|-----------------------------|------------|------------|
-| `/fly` | `/fly <player>` | Toggle flight mode | `ssjessentials.fly` | `ssjessentials.fly.others` |
-| `/feed` | `/feed <player>` | Restore hunger bar | `ssjessentials.feed` | `ssjessentials.feed.others` |
-| `/heal` | `/heal <player>` | Restore health | `ssjessentials.heal` | `ssjessentials.heal.others` |
-| `/tempban <player> <duration> [reason]` | `None` | Temporarily ban a player | `ssjessentials.tempban` | `None` |
-| `/nick <nickname>` | `/nick <player> <nickname>` | Change your nickname | `ssjessentials.nick` | `ssjessentials.nick.others` |
-| `/gm <0/1/2/3>` | `/gm <player> <0/1/2/3>` | Change gamemode | `ssjessentials.gamemode` | `ssjessentials.gamemode.others` |
-| `/freeze` | `/freeze <player>` | Freeze player | `ssjessentials.freeze`| `ssjessentials.freeze.others` |
-| `/vanish` | `/vanish <player>` | Toggle Vanish | `ssjessentials.vanish`| `ssjessentials.vanish.others` |
-| `/ssjereload` | `None` | Reloads the plugin | `ssjessentials.reload` | `None` |
-| `//ban list` | `/banlist` | Gives a list of banned players | `ssjessentials.banlist` | `None` |
-| `/god` | `/god <player>` | Toggles god mod | `ssjessentials.god` | `ssjessentials.god.others` |
-| `/unban <player>` | `None` | Unbans a banned player | `ssjessentials.unban` | `None` |
+| Command | Command Two | Command Three | Command Four | Description | Permission One | Permission Two | Permission Three | Permission Four | Permission Five |
+|-------------|-----------------|-----------------|-----------------|-----------------------------|------------|------------|------------|------------|------------|
+| `/fly` | `/fly <player>` | `None` | `None` | Toggle flight mode | `ssjessentials.fly` | `ssjessentials.fly.others` | `None` | `None` | `None` |
+| `/feed` | `/feed <player>` | `None` | `None` | Restore hunger bar | `ssjessentials.feed` | `ssjessentials.feed.others` | `None` | `None` | `None` |
+| `/heal` | `/heal <player>` | `None` | `None` | Restore health | `ssjessentials.heal` | `ssjessentials.heal.others` | `None` | `None` | `None` |
+| `/tempban <player> <duration> [reason]` | `None` | `None` | `None` | Temporarily ban a player | `ssjessentials.tempban` | `None` | `None` | `None` | `None` |
+| `/nick <nickname>` | `/nick <player> <nickname>` | `None` | `None` | Change your nickname | `ssjessentials.nick` | `ssjessentials.nick.others` | `None` | `None` | `None` |
+| `/gm <0/1/2/3>` | `/gm <player> <0/1/2/3>` | `None` | `None` | Change gamemode | `ssjessentials.gamemode` | `ssjessentials.gamemode.others` | `None` | `None` | `None` |
+| `/freeze` | `/freeze <player>` | `None` | `None` | Freeze player | `ssjessentials.freeze`| `ssjessentials.freeze.others` | `None` | `None` | `None` |
+| `/vanish` | `/vanish <player>` | `None` | `None` | Toggle Vanish | `ssjessentials.vanish`| `ssjessentials.vanish.others` | `None` | `None` | `None` |
+| `/ssjereload` | `None` | `None` | `None` | Reloads the plugin | `ssjessentials.reload` | `None` | `None` | `None` | `None` |
+| `//ban list` | `/banlist` | `None` | `None` | Gives a list of banned players with the ban reason, time of ban, who banned the banned player, and when the banned player will be unbanned | `ssjessentials.banlist` | `None` | `None` | `None` | `None` |
+| `/god` | `/god <player>` | `None` | `None` | Toggles god mod | `ssjessentials.god` | `ssjessentials.god.others` | `None` | `None` | `None` |
+| `/unban <player>` | `None` | `None` | `None` | Unbans a banned player | `ssjessentials.unban` | `None` | `None` | `None` | `None` |
+| `/spawn` | `/spawn <playername>` | `/spawn <entity> (optional <amount>) (optional <health>) (optional <playername>)` | `None` | Teleports you or target player to the spawn point OR spawns a mob where you are standing or at a target player | `ssjessentials.spawntp` | `ssjessentials.spawntp.others` | `ssjessentials.spawn.mob` | `ssjessentials.spawn.mob.tp` | `None` |
+| `/set spawn` | `/set spawnpoint` | `None` | `None` | Sets the server's spawn point | `ssjessentials.setspawn` | `None` | `None` | `None` | `None` |
+| `/tpr <playername>` | `/tp <playername> OR <coords>` | `/tp <playername> (to) <playername> OR <spawn> OR <coords>` | `None` | Ask to teleport to another player (or telelport to a player or teleport a player to another player or spawn if you are staff) | `ssjessentials.tpr` | `ssjessentials.tp.staff` | `None` | `None` | `None` |
+| `/tpr accept` | `None` | `None` | `None` | Accept a tp request from /tpr | `ssjessentials.tpr.accept`| `None` | `None` | `None` | `None` |
+| `/killall` | `/kill <player>` | `/kill <entity>` | `/killall entities` | Kills all players and entitys, kills a target player, or kills an entity | `ssjessentials.kill` | `ssjessentials.kill.all` | `ssjessentials.kill.entitys` | `None` | `None` |
+| `/ban <playername>` | `None` | `None` | `None` | Bans the target player | `ssjessentials.ban` | `ssjessentials.staff` | `None` | `None` | `None` |
+| `/kick <playername>` | `None` | `None` | `None` | Kicks the target player | `ssjessentials.kick` | `ssjessentials.staff` | `None` | `None` | `None`|
+
 
 ## 🔧 Configuration
 Create or modify `plugins/SSJEssentials/config.yml`:
@@ -133,6 +180,13 @@ tempban:
   max-duration: 30
   # Whether to broadcast tempbans
   broadcast: true
+
+# Ban Settings
+ban:
+  # Whether to broadcast bans
+  broadcast: true
+  # Default ban reason if none provided
+  default-reason: "No reason specified"
 ```
 
 Modify `plugins/SSJEssentials/PlayerData/<playername>.yml`:

@@ -26,3 +26,22 @@ tempban:
   max-duration: 30
   # Whether to broadcast tempbans
   broadcast: true
+
+# Teleport Settings
+teleport:
+  # Timeout for teleport requests (in milliseconds)
+  request-timeout: 60000
+
+# Ban Settings
+ban:
+  # Whether to broadcast bans
+  broadcast: true
+  # Default ban reason if none provided
+  default-reason: "No reason specified"
+
+# Kick Settings
+kick:
+  # Whether to broadcast kicks
+  broadcast: true
+  # Default kick reason if none provided
+  default-reason: "No reason specified"

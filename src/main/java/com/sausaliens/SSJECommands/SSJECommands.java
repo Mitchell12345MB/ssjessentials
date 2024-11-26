@@ -15,6 +15,11 @@ import java.util.Set;
 import org.bukkit.BanList;
 import org.bukkit.BanEntry;
 import java.text.SimpleDateFormat;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.OfflinePlayer;
 
 public class SSJECommands implements CommandExecutor {
 
@@ -32,6 +37,10 @@ public class SSJECommands implements CommandExecutor {
 
         if (command.getName().equalsIgnoreCase("banlist")) {
             return handleBanCommand(sender, args);
+        }
+
+        if (command.getName().equalsIgnoreCase("unban")) {
+            return handleUnban(sender, args);
         }
         
         if (!(sender instanceof Player)) {
@@ -64,7 +73,25 @@ public class SSJECommands implements CommandExecutor {
             case "god":
                 return handleGod(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
             case "unban":
-                return handleUnban(player, args);
+                return handleUnban(sender, args);
+            case "spawn":
+                return handleSpawn(player, args);
+            case "setspawn":
+                return handleSetSpawn(player);
+            case "tpr":
+                return handleTeleportRequest(player, args);
+            case "tpraccept":
+                return handleTeleportAccept(player);
+            case "tp":
+                return handleTeleport(player, args);
+            case "kill":
+                return handleKill(player, args);
+            case "killall":
+                return handleKillAll(player, args);
+            case "ban":
+                return handleBanPlayer(player, args);
+            case "kick":
+                return handleKickPlayer(player, args);
             default:
                 return false;
         }
@@ -384,17 +411,24 @@ public class SSJECommands implements CommandExecutor {
             return true;
         }
 
-        sender.sendMessage("§6Banned Players:");
-        for (@SuppressWarnings("rawtypes") BanEntry entry : banEntries) {
-            String expiry = entry.getExpiration() != null ? 
-                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(entry.getExpiration()) : 
-                "Permanent";
-                
-            sender.sendMessage(String.format("§e- %s §7(Until: %s)", 
-                entry.getTarget(), 
-                expiry));
-        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        sender.sendMessage("§6§lBanned Players List:");
+        sender.sendMessage("§7§m----------------------------------------");
 
+        for (@SuppressWarnings("rawtypes") BanEntry entry : banEntries) {
+            sender.sendMessage("§e" + entry.getTarget());
+            sender.sendMessage("§7Reason: §f" + entry.getReason());
+            sender.sendMessage("§7Banned by: §f" + entry.getSource());
+            sender.sendMessage("§7Banned on: §f" + dateFormat.format(entry.getCreated()));
+            
+            if (entry.getExpiration() != null) {
+                sender.sendMessage("§7Expires on: §f" + dateFormat.format(entry.getExpiration()));
+            } else {
+                sender.sendMessage("§7Expires: §cNever (Permanent)");
+            }
+            sender.sendMessage("§7§m----------------------------------------");
+        }
+        
         return true;
     }
 
@@ -426,7 +460,7 @@ public class SSJECommands implements CommandExecutor {
     }
 
     @SuppressWarnings("deprecation")
-    private boolean handleUnban(Player sender, String[] args) {
+    private boolean handleUnban(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.unban")) {
             sender.sendMessage("§cYou don't have permission to use this command!");
             return true;
@@ -438,6 +472,14 @@ public class SSJECommands implements CommandExecutor {
         }
 
         String targetName = args[0];
+        
+        // Check if player exists in offline players
+        OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+        if (!target.hasPlayedBefore() && !target.isOnline()) {
+            sender.sendMessage("§cPlayer has never joined the server!");
+            return true;
+        }
+
         if (!Bukkit.getBanList(BanList.Type.NAME).isBanned(targetName)) {
             sender.sendMessage("§cPlayer is not banned!");
             return true;
@@ -446,10 +488,342 @@ public class SSJECommands implements CommandExecutor {
         Bukkit.getBanList(BanList.Type.NAME).pardon(targetName);
         sender.sendMessage("§aUnbanned player: " + targetName);
         
-        if (ssjEssentials.getConfig().getBoolean("tempban.broadcast", true)) {
-            Bukkit.broadcastMessage("§a" + targetName + " has been unbanned by " + sender.getName());
+        if (ssjEssentials.getConfig().getBoolean("ban.broadcast", true)) {
+            String unbannedBy = sender instanceof Player ? sender.getName() : "Console";
+            Bukkit.broadcastMessage("§a" + targetName + " has been unbanned by " + unbannedBy);
         }
         
+        return true;
+    }
+
+    private boolean handleSpawn(Player sender, String[] args) {
+        if (args.length == 0) {
+            // Teleport sender to spawn
+            teleportToSpawn(sender);
+            return true;
+        }
+
+        // Try to find player first
+        Player targetPlayer = Bukkit.getPlayer(args[0]);
+        if (targetPlayer != null) {
+            if (!sender.hasPermission("ssjessentials.spawntp.others")) {
+                sender.sendMessage("§cYou don't have permission to teleport others to spawn!");
+                return true;
+            }
+            teleportToSpawn(targetPlayer);
+            sender.sendMessage("§aTeleported " + targetPlayer.getName() + " to spawn!");
+            return true;
+        }
+
+        // If not a player, try to spawn entity
+        if (!sender.hasPermission("ssjessentials.spawn.mob")) {
+            sender.sendMessage("§cYou don't have permission to spawn mobs!");
+            return true;
+        }
+
+        try {
+            EntityType entityType = EntityType.valueOf(args[0].toUpperCase());
+            int amount = args.length > 1 ? Integer.parseInt(args[1]) : 1;
+            double health = args.length > 2 ? Double.parseDouble(args[2]) : -1;
+            
+            Location spawnLoc = sender.getLocation();
+            if (args.length > 3) {
+                Player targetLoc = Bukkit.getPlayer(args[3]);
+                if (targetLoc != null) {
+                    if (!sender.hasPermission("ssjessentials.spawn.mob.tp")) {
+                        sender.sendMessage("§cYou don't have permission to spawn mobs at other players!");
+                        return true;
+                    }
+                    spawnLoc = targetLoc.getLocation();
+                } else {
+                    sender.sendMessage("§cTarget player not found!");
+                    return true;
+                }
+            }
+
+            for (int i = 0; i < amount; i++) {
+                Entity entity = sender.getWorld().spawnEntity(spawnLoc, entityType);
+                if (health > 0 && entity instanceof LivingEntity) {
+                    ((LivingEntity) entity).setHealth(health);
+                }
+            }
+            
+            String message = "§aSpawned " + amount + " " + entityType.toString().toLowerCase();
+            if (health > 0) {
+                message += " with " + health + " health";
+            }
+            if (args.length > 3) {
+                message += " at " + args[3];
+            }
+            sender.sendMessage(message);
+            
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage("§cInvalid entity type, amount, or health value!");
+            return true;
+        }
+        return true;
+    }
+
+    private void teleportToSpawn(Player player) {
+        Location spawn = ssjEssentials.getSpawnConfig().getSpawnLocation();
+        if (spawn == null) {
+            player.sendMessage("§cSpawn location has not been set!");
+            return;
+        }
+        player.teleport(spawn);
+        player.sendMessage("§aTeleported to spawn!");
+    }
+
+    private boolean handleSetSpawn(Player sender) {
+        if (!sender.hasPermission("ssjessentials.setspawn")) {
+            sender.sendMessage("§cYou don't have permission to set spawn!");
+            return true;
+        }
+
+        ssjEssentials.getSpawnConfig().setSpawnLocation(sender.getLocation());
+        sender.sendMessage("§aSpawn location set!");
+        return true;
+    }
+
+    private boolean handleTeleportRequest(Player sender, String[] args) {
+        if (args.length != 1) {
+            sender.sendMessage("§cUsage: /tpr <player>");
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        if (target == sender) {
+            sender.sendMessage("§cYou cannot teleport to yourself!");
+            return true;
+        }
+
+        ssjEssentials.getTeleportManager().createRequest(sender, target);
+        sender.sendMessage("§aTeleport request sent to " + target.getName());
+        target.sendMessage("§a" + sender.getName() + " wants to teleport to you.");
+        target.sendMessage("§aType /tpraccept to accept.");
+        return true;
+    }
+
+    private boolean handleTeleportAccept(Player sender) {
+        if (!ssjEssentials.getTeleportManager().hasActiveRequest(sender)) {
+            sender.sendMessage("§cYou have no pending teleport requests!");
+            return true;
+        }
+
+        Player requester = ssjEssentials.getTeleportManager().getRequester(sender);
+        if (requester == null || !requester.isOnline()) {
+            sender.sendMessage("§cThe player who requested to teleport is no longer online!");
+            ssjEssentials.getTeleportManager().removeRequest(sender);
+            return true;
+        }
+
+        requester.teleport(sender.getLocation());
+        requester.sendMessage("§aTeleported to " + sender.getName());
+        sender.sendMessage("§a" + requester.getName() + " was teleported to you.");
+        ssjEssentials.getTeleportManager().removeRequest(sender);
+        return true;
+    }
+
+    private boolean handleTeleport(Player sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.tp.staff")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /tp <player> [target/spawn/x y z]");
+            return true;
+        }
+
+        Player player = Bukkit.getPlayer(args[0]);
+        if (player == null) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        if (args.length == 1) {
+            // Teleport sender to player
+            sender.teleport(player.getLocation());
+            sender.sendMessage("§aTeleported to " + player.getName());
+            return true;
+        }
+
+        if (args[1].equalsIgnoreCase("spawn")) {
+            // Teleport player to spawn
+            player.teleport(ssjEssentials.getSpawnConfig().getSpawnLocation());
+            player.sendMessage("§aYou were teleported to spawn");
+            sender.sendMessage("§aTeleported " + player.getName() + " to spawn");
+            return true;
+        }
+
+        if (args.length == 4) {
+            // Handle coordinates
+            try {
+                double x = Double.parseDouble(args[1]);
+                double y = Double.parseDouble(args[2]);
+                double z = Double.parseDouble(args[3]);
+                Location loc = new Location(player.getWorld(), x, y, z);
+                player.teleport(loc);
+                player.sendMessage("§aYou were teleported to " + x + " " + y + " " + z);
+                sender.sendMessage("§aTeleported " + player.getName() + " to coordinates");
+                return true;
+            } catch (NumberFormatException e) {
+                sender.sendMessage("§cInvalid coordinates!");
+                return true;
+            }
+        }
+
+        // Handle player to player teleport
+        Player target = Bukkit.getPlayer(args[1]);
+        if (target == null) {
+            sender.sendMessage("§cTarget player not found!");
+            return true;
+        }
+
+        player.teleport(target.getLocation());
+        player.sendMessage("§aYou were teleported to " + target.getName());
+        sender.sendMessage("§aTeleported " + player.getName() + " to " + target.getName());
+        return true;
+    }
+
+    private boolean handleKill(Player sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.kill")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /kill <player> OR /kill <entity>");
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target != null) {
+            target.setHealth(0);
+            sender.sendMessage("§aKilled " + target.getName());
+            return true;
+        }
+
+        // If no player found, try to kill entities (requires additional permission)
+        if (!sender.hasPermission("ssjessentials.kill.entitys")) {
+            sender.sendMessage("§cPlayer not found and you don't have permission to kill entities!");
+            return true;
+        }
+
+        // Implementation for killing specific entity types can be added here
+        sender.sendMessage("§cEntity killing not implemented yet!");
+        return true;
+    }
+
+    private boolean handleKillAll(Player sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.kill.all")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (args.length > 0 && args[0].equalsIgnoreCase("entities")) {
+            if (!sender.hasPermission("ssjessentials.kill.entitys")) {
+                sender.sendMessage("§cYou don't have permission to kill entities!");
+                return true;
+            }
+            int count = 0;
+            for (Entity entity : sender.getWorld().getEntities()) {
+                if (!(entity instanceof Player)) {
+                    entity.remove();
+                    count++;
+                }
+            }
+            sender.sendMessage("§aKilled " + count + " entities");
+            return true;
+        }
+
+        int count = 0;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player != sender) {
+                player.setHealth(0);
+                count++;
+            }
+        }
+
+        sender.sendMessage("§aKilled " + count + " players");
+        return true;
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean handleBanPlayer(Player sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.ban") || !sender.hasPermission("ssjessentials.staff")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /ban <player> [reason]");
+            return true;
+        }
+
+        String targetName = args[0];
+        OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+
+        if (target == null || !target.hasPlayedBefore()) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        String reason = args.length > 1 
+            ? String.join(" ", Arrays.copyOfRange(args, 1, args.length))
+            : ssjEssentials.getConfig().getString("ban.default-reason", "No reason specified");
+
+        // Ban the player using BanList
+        @SuppressWarnings({ "rawtypes" })
+        BanList banList = Bukkit.getBanList(BanList.Type.NAME);
+        banList.addBan(targetName, reason, (Date)null, sender.getName());
+
+        // Kick the player if they are online
+        if (target.isOnline()) {
+            Player onlinePlayer = target.getPlayer();
+            onlinePlayer.kickPlayer(reason);
+        }
+
+        if (ssjEssentials.getConfig().getBoolean("ban.broadcast", true)) {
+            Bukkit.broadcastMessage("§c" + targetName + " has been banned by " + sender.getName() + " for: " + reason);
+        }
+
+        return true;
+    }
+
+    private boolean handleKickPlayer(Player sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.kick") || !sender.hasPermission("ssjessentials.staff")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /kick <player> [reason]");
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        String reason = args.length > 1 
+            ? String.join(" ", Arrays.copyOfRange(args, 1, args.length))
+            : ssjEssentials.getConfig().getString("kick.default-reason", "No reason specified");
+
+        // Kick the player
+        target.kickPlayer(reason);
+
+        if (ssjEssentials.getConfig().getBoolean("kick.broadcast", true)) {
+            Bukkit.broadcastMessage("§c" + target.getName() + " has been kicked by " + sender.getName() + " for: " + reason);
+        }
+
         return true;
     }
 } 
