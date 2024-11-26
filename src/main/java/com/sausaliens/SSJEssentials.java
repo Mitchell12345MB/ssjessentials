@@ -9,6 +9,7 @@ import com.sausaliens.SSJEListeners.PlayerFlightListener;
 import com.sausaliens.SSJEListeners.PlayerFreezeListener;
 import com.sausaliens.SSJEPlayerData.SSJEPlayerData;
 import com.sausaliens.SSJEListeners.SSJECommandListener;
+import com.sausaliens.SSJEListeners.PlayerJoinListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,8 @@ public class SSJEssentials extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerFreezeListener(this), this);
 
         getServer().getPluginManager().registerEvents(new SSJECommandListener(this), this);
+
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
 
         // Initialize player data map
         this.playerDataMap = new HashMap<>();
