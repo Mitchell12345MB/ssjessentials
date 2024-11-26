@@ -26,7 +26,7 @@ public class SSJECommands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (command.getName().equalsIgnoreCase("reload")) {
+        if (command.getName().equalsIgnoreCase("ssjereload")) {
             return handleReload(sender);
         }
 
@@ -61,6 +61,10 @@ public class SSJECommands implements CommandExecutor {
                 return handleGamemode(player, args);
             case "//ban":
                 return handleBanCommand(sender, args);
+            case "god":
+                return handleGod(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
+            case "unban":
+                return handleUnban(player, args);
             default:
                 return false;
         }
@@ -226,29 +230,30 @@ public class SSJECommands implements CommandExecutor {
 
     private boolean handleNick(Player sender, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /nick [player] <nickname>");
+            sender.sendMessage("§cUsage: /nick <nickname> or /nick <player> <nickname>");
             return true;
         }
 
-        Player target;
+        Player target = sender;
         String nickname;
 
-        if (args.length > 1 && sender.hasPermission("ssjessentials.nick.others")) {
+        if (args.length > 1) {
+            if (!sender.hasPermission("ssjessentials.nick.others")) {
+                sender.sendMessage("§cYou don't have permission to change other players' nicknames!");
+                return true;
+            }
             target = Bukkit.getPlayer(args[0]);
+            if (target == null) {
+                sender.sendMessage("§cPlayer not found!");
+                return true;
+            }
             nickname = args[1];
         } else {
-            target = sender;
+            if (!sender.hasPermission("ssjessentials.nick")) {
+                sender.sendMessage("§cYou don't have permission to change your nickname!");
+                return true;
+            }
             nickname = args[0];
-        }
-
-        if (target == null) {
-            sender.sendMessage("§cPlayer not found!");
-            return true;
-        }
-
-        if (!sender.hasPermission("ssjessentials.nick" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
-            return true;
         }
 
         int maxLength = ssjEssentials.getConfig().getInt("nickname.max-length", 16);
@@ -260,6 +265,11 @@ public class SSJECommands implements CommandExecutor {
         if (ssjEssentials.getConfig().getBoolean("nickname.allow-colors", true)) {
             nickname = ChatColor.translateAlternateColorCodes('&', nickname);
         }
+
+        // Save nickname in player data
+        SSJConfigs.PlayerData playerData = ssjEssentials.getConfigs().getPlayerData(target);
+        playerData.setNickname(nickname);
+        ssjEssentials.getConfigs().savePlayerData(target);
 
         target.setDisplayName(nickname);
         target.setPlayerListName(nickname);
@@ -278,23 +288,19 @@ public class SSJECommands implements CommandExecutor {
             return true;
         }
 
-        Player target;
         String mode = args[0];
+        Player target = sender;
 
-        if (args.length > 1 && sender.hasPermission("ssjessentials.gamemode.others")) {
+        if (args.length > 1) {
+            if (!sender.hasPermission("ssjessentials.gamemode.others")) {
+                sender.sendMessage("§cYou don't have permission to change other players' gamemode!");
+                return true;
+            }
             target = Bukkit.getPlayer(args[1]);
-        } else {
-            target = sender;
-        }
-
-        if (target == null) {
-            sender.sendMessage("§cPlayer not found!");
-            return true;
-        }
-
-        if (!sender.hasPermission("ssjessentials.gamemode" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
-            return true;
+            if (target == null) {
+                sender.sendMessage("§cPlayer not found!");
+                return true;
+            }
         }
 
         GameMode gameMode;
@@ -389,6 +395,61 @@ public class SSJECommands implements CommandExecutor {
                 expiry));
         }
 
+        return true;
+    }
+
+    private boolean handleGod(Player sender, Player target) {
+        if (!sender.hasPermission("ssjessentials.god" + (sender == target ? "" : ".others"))) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (target == null) {
+            sender.sendMessage("§cPlayer not found!");
+            return true;
+        }
+
+        SSJConfigs.PlayerData playerData = ssjEssentials.getConfigs().getPlayerData(target);
+        boolean newGodState = !playerData.isGodMode();
+        playerData.setGodMode(newGodState);
+        ssjEssentials.getConfigs().savePlayerData(target);
+
+        target.setInvulnerable(newGodState);
+        
+        target.sendMessage(newGodState ? "§aGod mode enabled!" : "§cGod mode disabled!");
+        if (sender != target) {
+            sender.sendMessage(newGodState ? 
+                "§aEnabled god mode for " + target.getName() : 
+                "§cDisabled god mode for " + target.getName());
+        }
+        return true;
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean handleUnban(Player sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.unban")) {
+            sender.sendMessage("§cYou don't have permission to use this command!");
+            return true;
+        }
+
+        if (args.length < 1) {
+            sender.sendMessage("§cUsage: /unban <player>");
+            return true;
+        }
+
+        String targetName = args[0];
+        if (!Bukkit.getBanList(BanList.Type.NAME).isBanned(targetName)) {
+            sender.sendMessage("§cPlayer is not banned!");
+            return true;
+        }
+
+        Bukkit.getBanList(BanList.Type.NAME).pardon(targetName);
+        sender.sendMessage("§aUnbanned player: " + targetName);
+        
+        if (ssjEssentials.getConfig().getBoolean("tempban.broadcast", true)) {
+            Bukkit.broadcastMessage("§a" + targetName + " has been unbanned by " + sender.getName());
+        }
+        
         return true;
     }
 } 

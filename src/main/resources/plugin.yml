@@ -38,7 +38,7 @@ commands:
     description: Change gamemode
     usage: /<command> [player] <0/1/2/3>
     permission: ssjessentials.gamemode
-  reload:
+  ssjereload:
     description: Reloads the plugin configuration
     usage: /<command>
     permission: ssjessentials.reload
@@ -46,6 +46,14 @@ commands:
     description: Shows list of banned players
     usage: /<command>
     permission: ssjessentials.banlist
+  god:
+    description: Toggles god mode
+    usage: /<command> [player]
+    permission: ssjessentials.god
+  unban:
+    description: Unbans a banned player
+    usage: /<command> <player>
+    permission: ssjessentials.unban
 
 permissions:
   ssjessentials.fly:
@@ -98,4 +106,13 @@ permissions:
     default: op
   ssjessentials.banlist:
     description: Allows player to manage the ban list
+    default: op
+  ssjessentials.god:
+    description: Allows player to toggle god mode
+    default: op
+  ssjessentials.god.others:
+    description: Allows player to toggle god mode for others
+    default: op
+  ssjessentials.unban:
+    description: Allows player to unban others
     default: op

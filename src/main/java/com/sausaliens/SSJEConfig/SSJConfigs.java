@@ -48,6 +48,7 @@ public class SSJConfigs {
             data.setFlying(config.getBoolean("flying", false));
             data.setVanished(config.getBoolean("vanished", false));
             data.setFrozen(config.getBoolean("frozen", false));
+            data.setGodMode(config.getBoolean("godmode", false));
             String gameModeStr = config.getString("gamemode", "SURVIVAL");
             data.setGameMode(GameMode.valueOf(gameModeStr));
         }
@@ -67,6 +68,7 @@ public class SSJConfigs {
             config.set("flying", data.isFlying());
             config.set("vanished", data.isVanished());
             config.set("frozen", data.isFrozen());
+            config.set("godmode", data.isGodMode());
             config.set("gamemode", data.getGameMode().toString());
             
             try {
@@ -100,7 +102,9 @@ public class SSJConfigs {
         private boolean isFlying = false;
         private boolean isVanished = false;
         private boolean isFrozen = false;
+        private boolean isGodMode = false;
         private GameMode gameMode = GameMode.SURVIVAL;
+        private String nickname = null;
 
         public boolean isFlying() {
             return isFlying;
@@ -132,6 +136,22 @@ public class SSJConfigs {
 
         public void setGameMode(GameMode gameMode) {
             this.gameMode = gameMode;
+        }
+
+        public String getNickname() {
+            return nickname;
+        }
+
+        public void setNickname(String nickname) {
+            this.nickname = nickname;
+        }
+
+        public boolean isGodMode() {
+            return isGodMode;
+        }
+
+        public void setGodMode(boolean godMode) {
+            this.isGodMode = godMode;
         }
     }
 } 

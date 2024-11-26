@@ -54,8 +54,14 @@ permissions:
   ssjessentials.reload:
     description: Allows player to reload the plugin configuration
     default: op
-  ssjessentials.banlist
+  ssjessentials.banlist:
     description: Allows a player to see the banned (and tempbanned) players on the server
+  ssjessentials.god:
+    description: Toggles god mode
+  ssjessentials.god.others:
+    description: Toggles god mode for other players
+  ssjessentials.unban:
+    description: Unbans a banned player
 ```
 
 ### 🎮 Commands
@@ -70,8 +76,10 @@ permissions:
 | `/gm <0/1/2/3>` | `/gm <player> <0/1/2/3>` | Change gamemode | `ssjessentials.gamemode` | `ssjessentials.gamemode.others` |
 | `/freeze` | `/freeze <player>` | Freeze player | `ssjessentials.freeze`| `ssjessentials.freeze.others` |
 | `/vanish` | `/vanish <player>` | Toggle Vanish | `ssjessentials.vanish`| `ssjessentials.vanish.others` |
-| `/reload` | `None` | Reloads the plugin | `ssjessentials.reload` | `None` |
+| `/ssjereload` | `None` | Reloads the plugin | `ssjessentials.reload` | `None` |
 | `//ban list` | `/banlist` | Gives a list of banned players | `ssjessentials.banlist` | `None` |
+| `/god` | `/god <player>` | Toggles god mod | `ssjessentials.god` | `ssjessentials.god.others` |
+| `/unban <player>` | `None` | Unbans a banned player | `ssjessentials.unban` | `None` |
 
 ## 🔧 Configuration
 Create or modify `plugins/SSJEssentials/config.yml`:

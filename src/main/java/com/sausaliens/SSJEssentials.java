@@ -33,8 +33,13 @@ public class SSJEssentials extends JavaPlugin {
         getCommand("heal").setExecutor(commandExecutor);
         getCommand("feed").setExecutor(commandExecutor);
         getCommand("freeze").setExecutor(commandExecutor);
-        getCommand("reload").setExecutor(commandExecutor);
+        getCommand("ssjereload").setExecutor(commandExecutor);
         getCommand("banlist").setExecutor(commandExecutor);
+        getCommand("god").setExecutor(commandExecutor);
+        getCommand("unban").setExecutor(commandExecutor);
+        getCommand("nick").setExecutor(commandExecutor);
+        getCommand("gm").setExecutor(commandExecutor);
+        getCommand("tempban").setExecutor(commandExecutor);
 
         this.playerFlightListener = new PlayerFlightListener(this);
         getServer().getPluginManager().registerEvents(playerFlightListener, this);
