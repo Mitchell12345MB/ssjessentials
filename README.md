@@ -56,12 +56,6 @@ permissions:
     default: op
   ssjessentials.banlist:
     description: Allows a player to see the banned (and tempbanned) players on the server
-  ssjessentials.god:
-    description: Toggles god mode
-  ssjessentials.god.others:
-    description: Toggles god mode for other players
-  ssjessentials.unban:
-    description: Unbans a banned player
 ```
 
 ### 🎮 Commands
