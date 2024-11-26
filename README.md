@@ -51,11 +51,36 @@ permissions:
   ssjessentials.freeze.others:
     description: Allows player to freeze others
     default: op
+  ssjessentials.tempban:
+    description: Allows player to temporarily ban others
+    default: op
+  ssjessentials.nick:
+    description: Allows player to change their nickname
+    default: op
+  ssjessentials.nick.others:
+    description: Allows player to change others' nicknames
+    default: op
+  ssjessentials.gamemode:
+    description: Allows player to change their gamemode
+    default: op
+  ssjessentials.gamemode.others:
+    description: Allows player to change others' gamemode
+    default: op
   ssjessentials.reload:
     description: Allows player to reload the plugin configuration
     default: op
   ssjessentials.banlist:
-    description: Allows a player to see the banned (and tempbanned) players on the server
+    description: Allows player to manage the ban list
+    default: op
+  ssjessentials.god:
+    description: Allows player to toggle god mode
+    default: op
+  ssjessentials.god.others:
+    description: Allows player to toggle god mode for others
+    default: op
+  ssjessentials.unban:
+    description: Allows player to unban others
+    default: op
 ```
 
 ### 🎮 Commands
@@ -116,15 +141,21 @@ Modify `plugins/SSJEssentials/PlayerData/<playername>.yml`:
 
 # Player Settings
 
-uuid: <player UUID>
+uuid: 
 
-name: <playername>
+name: 
 
 flying: false
 
 vanished: false
 
-gamemode: 'survival'
+frozen: false
+
+gamemode: SURVIVAL
+
+godmode: false
+
+nickname: 
 
 ```
 

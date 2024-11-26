@@ -44,17 +44,19 @@ public class SSJConfigs {
         FileConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
         
         PlayerData data = new PlayerData();
-        if (playerFile.exists()) {
-            data.setFlying(config.getBoolean("flying", false));
-            data.setVanished(config.getBoolean("vanished", false));
-            data.setFrozen(config.getBoolean("frozen", false));
-            data.setGodMode(config.getBoolean("godmode", false));
-            String gameModeStr = config.getString("gamemode", "SURVIVAL");
-            data.setGameMode(GameMode.valueOf(gameModeStr));
-        }
+        data.setFlying(config.getBoolean("flying", false));
+        data.setVanished(config.getBoolean("vanished", false));
+        data.setFrozen(config.getBoolean("frozen", false));
+        data.setGodMode(config.getBoolean("godmode", false));
+        data.setGameMode(GameMode.valueOf(config.getString("gamemode", "SURVIVAL")));
+        data.setNickname(config.getString("nickname", null));
         
         playerData.put(player.getUniqueId(), data);
-        savePlayerData(player);
+        
+        if (data.getNickname() != null) {
+            player.setDisplayName(data.getNickname());
+            player.setPlayerListName(data.getNickname());
+        }
     }
 
     public void savePlayerData(Player player) {
@@ -70,6 +72,7 @@ public class SSJConfigs {
             config.set("frozen", data.isFrozen());
             config.set("godmode", data.isGodMode());
             config.set("gamemode", data.getGameMode().toString());
+            config.set("nickname", data.getNickname());
             
             try {
                 config.save(playerFile);
