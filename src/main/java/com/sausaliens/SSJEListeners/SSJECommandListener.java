@@ -20,5 +20,17 @@ public class SSJECommandListener implements Listener {
             event.setCancelled(true);
             plugin.getCommandExecutor().handleBanCommand(event.getPlayer(), new String[0]);
         }
+
+        // home list
+        if (message.equals("//home list")) {
+            event.setCancelled(true);
+            plugin.getCommandExecutor().handleHomeList(event.getPlayer());
+        }
+
+        // warp list
+        if (message.equals("//warp list")) {
+            event.setCancelled(true);
+            plugin.getCommandExecutor().handleWarpList(event.getPlayer());
+        }
     }
 } 

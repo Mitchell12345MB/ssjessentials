@@ -1,0 +1,21 @@
+# SSJEssentials Groups Configuration
+# This file contains all group definitions and player group assignments
+
+groups:
+  default:
+    permissions:
+      - ssjessentials.default
+    prefix: ""
+    suffix: ""
+  
+  mod:
+    permissions:
+      - ssjessentials.mod
+    prefix: "&b[Mod]"
+    suffix: "&f"
+  
+  admin:
+    permissions:
+      - ssjessentials.admin
+    prefix: "&3[Admin]"
+    suffix: "&f"

@@ -20,6 +20,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.potion.PotionEffect;
 
 public class SSJECommands implements CommandExecutor {
 
@@ -27,6 +28,12 @@ public class SSJECommands implements CommandExecutor {
 
     public SSJECommands(SSJEssentials ssjEssentials) {
         this.ssjEssentials = ssjEssentials;
+    }
+
+    public String formatMessage(String message) {
+        String prefix = ChatColor.translateAlternateColorCodes('&', 
+            ssjEssentials.getConfig().getString("prefix", "&7[&bSSJ&7] "));
+        return prefix + ChatColor.translateAlternateColorCodes('&', message);
     }
 
     @Override
@@ -42,38 +49,62 @@ public class SSJECommands implements CommandExecutor {
         if (command.getName().equalsIgnoreCase("unban")) {
             return handleUnban(sender, args);
         }
+
+        String cmd = command.getName().toLowerCase();
         
+        // Commands that can be used by both console and players
+        switch (cmd) {
+            case "ban":
+                return handleBanPlayer(sender, args);
+            case "kick":
+                return handleKickPlayer(sender, args);
+            case "tempban":
+                return handleTempban(sender, args);
+            case "unban":
+                return handleUnban(sender, args);
+            case "banlist":
+                return handleBanCommand(sender, args);
+            case "/ban":
+                return handleBanCommand(sender, args);
+            case "god":
+                return handleGod(sender, args);
+            case "kill":
+                return handleKill(sender, args);
+            case "killall":
+                return handleKillAll(sender, args);
+            case "heal":
+                return handleHeal(sender, args);
+            case "feed":
+                return handleFeed(sender, args);
+            case "freeze":
+                return handleFreeze(sender, args);
+            case "nick":
+                return handleNick(sender, args);
+            case "gm":
+                return handleGamemode(sender, args);
+            case "editwarp":
+                return handleEditWarp(sender, args);
+            case "resetwarp":
+                return handleResetWarp(sender, args);
+            case "warpall":
+                return handleWarpAll(sender, args);
+            case "spawnall":
+                return handleSpawnAll(sender);
+        }
+        
+        // Player-only commands below this point
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§cThis command can only be used by players!");
+            sender.sendMessage(formatMessage("§cThis command can only be used by players!"));
             return true;
         }
 
         Player player = (Player) sender;
-        String cmd = command.getName().toLowerCase();
 
         switch (cmd) {
             case "fly":
                 return handleFly(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
             case "vanish":
                 return handleVanish(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
-            case "heal":
-                return handleHeal(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
-            case "feed":
-                return handleFeed(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
-            case "freeze":
-                return handleFreeze(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
-            case "tempban":
-                return handleTempban(player, args);
-            case "nick":
-                return handleNick(player, args);
-            case "gm":
-                return handleGamemode(player, args);
-            case "//ban":
-                return handleBanCommand(sender, args);
-            case "god":
-                return handleGod(player, args.length > 0 ? Bukkit.getPlayer(args[0]) : player);
-            case "unban":
-                return handleUnban(sender, args);
             case "spawn":
                 return handleSpawn(player, args);
             case "setspawn":
@@ -84,14 +115,30 @@ public class SSJECommands implements CommandExecutor {
                 return handleTeleportAccept(player);
             case "tp":
                 return handleTeleport(player, args);
-            case "kill":
-                return handleKill(player, args);
-            case "killall":
-                return handleKillAll(player, args);
-            case "ban":
-                return handleBanPlayer(player, args);
-            case "kick":
-                return handleKickPlayer(player, args);
+            case "warp":
+                return handleWarp(player, args);
+            case "setwarp":
+                return handleSetWarp(player, args);
+            case "delwarp":
+                return handleDelWarp(player, args);
+            case "/warp":
+                return handleWarpList(sender);
+            case "home":
+                return handleHome(player, args);
+            case "sethome":
+                return handleSetHome(player, args);
+            case "delhome":
+                return handleDelHome(player, args);
+            case "/home":
+                return handleHomeList(player);
+            case "editwarp":
+                return handleEditWarp(sender, args);
+            case "resetwarp":
+                return handleResetWarp(sender, args);
+            case "warpall":
+                return handleWarpAll(sender, args);
+            case "spawnall":
+                return handleSpawnAll(sender);
             default:
                 return false;
         }
@@ -99,12 +146,12 @@ public class SSJECommands implements CommandExecutor {
 
     private boolean handleFly(Player sender, Player target) {
         if (!sender.hasPermission("ssjessentials.fly" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (target.getGameMode() == GameMode.CREATIVE || target.getGameMode() == GameMode.SPECTATOR) {
-            sender.sendMessage("§cCannot toggle flight in " + target.getGameMode().toString().toLowerCase() + " mode!");
+            sender.sendMessage(formatMessage("§cCannot toggle flight in " + target.getGameMode().toString().toLowerCase() + " mode!"));
             return true;
         }
 
@@ -119,18 +166,18 @@ public class SSJECommands implements CommandExecutor {
         
         ssjEssentials.getConfigs().savePlayerData(target);
         
-        target.sendMessage(newFlyState ? "§aFlight mode enabled!" : "§cFlight mode disabled!");
+        target.sendMessage(newFlyState ? formatMessage("§aFlight mode enabled!") : formatMessage("§cFlight mode disabled!"));
         if (sender != target) {
             sender.sendMessage(newFlyState ? 
-                "§aEnabled flight mode for " + target.getName() : 
-                "§cDisabled flight mode for " + target.getName());
+                formatMessage("§aEnabled flight mode for " + target.getName()) : 
+                formatMessage("§cDisabled flight mode for " + target.getName()));
         }
         return true;
     }
 
     private boolean handleVanish(Player sender, Player target) {
         if (!sender.hasPermission("ssjessentials.vanish" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
@@ -151,54 +198,104 @@ public class SSJECommands implements CommandExecutor {
         playerData.setVanished(newVanishState);
         ssjEssentials.getConfigs().savePlayerData(target);
         
-        target.sendMessage(newVanishState ? "§aYou are now invisible!" : "§cYou are now visible!");
+        target.sendMessage(newVanishState ? formatMessage("§aYou are now invisible!") : formatMessage("§cYou are now visible!"));
         if (sender != target) {
             sender.sendMessage(newVanishState ? 
-                "§aMade " + target.getName() + " invisible!" : 
-                "§cMade " + target.getName() + " visible!");
+                formatMessage("§aMade " + target.getName() + " invisible!") : 
+                formatMessage("§cMade " + target.getName() + " visible!"));
         }
         return true;
     }
 
-    private boolean handleHeal(Player sender, Player target) {
-        if (!sender.hasPermission("ssjessentials.heal" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+    private boolean handleHeal(CommandSender sender, String[] args) {
+        if (args.length == 0) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(formatMessage("§cUsage: /heal <player>"));
+                return true;
+            }
+            Player player = (Player) sender;
+            if (!player.hasPermission("ssjessentials.heal")) {
+                player.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
+                return true;
+            }
+            healPlayer(player);
+            player.sendMessage(formatMessage("§aYou have been healed!"));
             return true;
         }
 
-        double maxHealth = target.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue();
-        target.setHealth(maxHealth);
-        target.setFoodLevel(20);
-        target.setSaturation(20f);
-        target.setExhaustion(0f);
-        
-        target.sendMessage("§aYou have been fully healed!");
-        if (sender != target) {
-            sender.sendMessage("§aHealed " + target.getName() + "!");
+        if (!sender.hasPermission("ssjessentials.heal.others")) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to heal other players!"));
+            return true;
         }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
+            return true;
+        }
+
+        healPlayer(target);
+        target.sendMessage(formatMessage("§aYou have been healed by " + sender.getName() + "!"));
+        sender.sendMessage(formatMessage("§aHealed " + target.getName() + "!"));
         return true;
     }
 
-    private boolean handleFeed(Player sender, Player target) {
-        if (!sender.hasPermission("ssjessentials.feed" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+    @SuppressWarnings("deprecation")
+    private void healPlayer(Player player) {
+        player.setHealth(player.getMaxHealth());
+        player.setFoodLevel(20);
+        player.setSaturation(20f);
+        player.setExhaustion(0f);
+        player.setFireTicks(0);
+        for (PotionEffect effect : player.getActivePotionEffects()) {
+            player.removePotionEffect(effect.getType());
+        }
+    }
+
+    private boolean handleFeed(CommandSender sender, String[] args) {
+        if (args.length == 0) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(formatMessage("§cUsage: /feed <player>"));
+                return true;
+            }
+            Player player = (Player) sender;
+            if (!player.hasPermission("ssjessentials.feed")) {
+                player.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
+                return true;
+            }
+            player.setFoodLevel(20);
+            player.setSaturation(20f);
+            player.sendMessage(formatMessage("§aYour hunger has been satisfied!"));
+            return true;
+        }
+
+        if (!sender.hasPermission("ssjessentials.feed.others")) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to feed other players!"));
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
         target.setFoodLevel(20);
         target.setSaturation(20f);
-        target.setExhaustion(0f);
-        
-        target.sendMessage("§aYour hunger has been satisfied!");
-        if (sender != target) {
-            sender.sendMessage("§aFed " + target.getName() + "!");
-        }
+        target.sendMessage(formatMessage("§aYour hunger has been satisfied by " + sender.getName() + "!"));
+        sender.sendMessage(formatMessage("§aFed " + target.getName() + "!"));
         return true;
     }
 
-    private boolean handleFreeze(Player sender, Player target) {
-        if (!sender.hasPermission("ssjessentials.freeze" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+    private boolean handleFreeze(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.freeze" + (sender instanceof Player ? "" : ".others"))) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
@@ -208,29 +305,30 @@ public class SSJECommands implements CommandExecutor {
         playerData.setFrozen(newFrozenState);
         ssjEssentials.getConfigs().savePlayerData(target);
         
-        target.sendMessage(newFrozenState ? "§cYou have been frozen!" : "§aYou have been unfrozen!");
+        target.sendMessage(newFrozenState ? formatMessage("§cYou have been frozen!") : formatMessage("§aYou have been unfrozen!"));
         if (sender != target) {
             sender.sendMessage(newFrozenState ? 
-                "§aFroze " + target.getName() + "!" : 
-                "§aUnfroze " + target.getName() + "!");
+                formatMessage("§aFroze " + target.getName() + "!") : 
+                formatMessage("§aUnfroze " + target.getName() + "!"));
         }
         return true;
     }
 
-    private boolean handleTempban(Player sender, String[] args) {
+    @SuppressWarnings("deprecation")
+    private boolean handleTempban(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.tempban")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (args.length < 2) {
-            sender.sendMessage("§cUsage: /tempban <player> <duration> [reason]");
+            sender.sendMessage(formatMessage("§cUsage: /tempban <player> <duration> [reason]"));
             return true;
         }
 
-        Player target = Bukkit.getPlayer(args[0]);
-        if (target == null) {
-            sender.sendMessage("§cPlayer not found!");
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+        if (!target.hasPlayedBefore() && !target.isOnline()) {
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
@@ -238,46 +336,54 @@ public class SSJECommands implements CommandExecutor {
         String reason = args.length > 2 ? String.join(" ", Arrays.copyOfRange(args, 2, args.length)) 
                                       : ssjEssentials.getConfig().getString("tempban.default-reason");
 
-        // Parse duration (you might want to add more sophisticated duration parsing)
         long durationInMillis = parseDuration(duration);
         if (durationInMillis <= 0) {
-            sender.sendMessage("§cInvalid duration format!");
+            sender.sendMessage(formatMessage("§cInvalid duration format!"));
             return true;
         }
 
         Date expiry = new Date(System.currentTimeMillis() + durationInMillis);
-        target.ban(reason, expiry, sender.getName(), true);
+        Bukkit.getBanList(BanList.Type.NAME).addBan(target.getName(), reason, expiry, sender.getName());
+        
+        if (target.isOnline()) {
+            target.getPlayer().kickPlayer(reason);
+        }
         
         if (ssjEssentials.getConfig().getBoolean("tempban.broadcast")) {
-            Bukkit.broadcastMessage("§c" + target.getName() + " has been temporarily banned for: " + reason);
+            Bukkit.broadcastMessage(formatMessage("§c" + target.getName() + " has been temporarily banned for: " + reason));
         }
         
         return true;
     }
 
-    private boolean handleNick(Player sender, String[] args) {
+    private boolean handleNick(CommandSender sender, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /nick <nickname> or /nick <player> <nickname>");
+            sender.sendMessage(formatMessage("§cUsage: /nick <nickname> or /nick <player> <nickname>"));
             return true;
         }
 
-        Player target = sender;
+        Player target = sender instanceof Player ? (Player) sender : Bukkit.getPlayer(args[0]);
+        if (target == null) {
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
+            return true;
+        }
+
         String nickname;
 
         if (args.length > 1) {
             if (!sender.hasPermission("ssjessentials.nick.others")) {
-                sender.sendMessage("§cYou don't have permission to change other players' nicknames!");
+                sender.sendMessage(formatMessage("§cYou don't have permission to change other players' nicknames!"));
                 return true;
             }
             target = Bukkit.getPlayer(args[0]);
             if (target == null) {
-                sender.sendMessage("§cPlayer not found!");
+                sender.sendMessage(formatMessage("§cPlayer not found!"));
                 return true;
             }
             nickname = args[1];
         } else {
             if (!sender.hasPermission("ssjessentials.nick")) {
-                sender.sendMessage("§cYou don't have permission to change your nickname!");
+                sender.sendMessage(formatMessage("§cYou don't have permission to change your nickname!"));
                 return true;
             }
             nickname = args[0];
@@ -285,7 +391,7 @@ public class SSJECommands implements CommandExecutor {
 
         int maxLength = ssjEssentials.getConfig().getInt("nickname.max-length", 16);
         if (nickname.length() > maxLength) {
-            sender.sendMessage("§cNickname too long! Maximum length is " + maxLength + " characters.");
+            sender.sendMessage(formatMessage("§cNickname too long! Maximum length is " + maxLength + " characters."));
             return true;
         }
 
@@ -299,33 +405,39 @@ public class SSJECommands implements CommandExecutor {
         ssjEssentials.getConfigs().savePlayerData(target);
 
         target.setDisplayName(nickname);
-        target.setPlayerListName(nickname);
+        // Update tab list name with group prefix and new nickname
+        ssjEssentials.getGroupManager().updatePlayerTabName(target);
         
-        target.sendMessage("§aYour nickname has been changed to: " + nickname);
+        target.sendMessage(formatMessage("§aYour nickname has been changed to: " + nickname));
         if (sender != target) {
-            sender.sendMessage("§aChanged " + target.getName() + "'s nickname to: " + nickname);
+            sender.sendMessage(formatMessage("§aChanged " + target.getName() + "'s nickname to: " + nickname));
         }
         
         return true;
     }
 
-    private boolean handleGamemode(Player sender, String[] args) {
+    private boolean handleGamemode(CommandSender sender, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /gm <0/1/2/3> [player]");
+            sender.sendMessage(formatMessage("§cUsage: /gm <0/1/2/3> [player]"));
             return true;
         }
 
         String mode = args[0];
-        Player target = sender;
+        Player target = sender instanceof Player ? (Player) sender : Bukkit.getPlayer(args[1]);
+
+        if (target == null) {
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
+            return true;
+        }
 
         if (args.length > 1) {
             if (!sender.hasPermission("ssjessentials.gamemode.others")) {
-                sender.sendMessage("§cYou don't have permission to change other players' gamemode!");
+                sender.sendMessage(formatMessage("§cYou don't have permission to change other players' gamemode!"));
                 return true;
             }
             target = Bukkit.getPlayer(args[1]);
             if (target == null) {
-                sender.sendMessage("§cPlayer not found!");
+                sender.sendMessage(formatMessage("§cPlayer not found!"));
                 return true;
             }
         }
@@ -345,7 +457,7 @@ public class SSJECommands implements CommandExecutor {
                 gameMode = GameMode.SPECTATOR;
                 break;
             default:
-                sender.sendMessage("§cInvalid gamemode! Use 0/1/2/3");
+                sender.sendMessage(formatMessage("§cInvalid gamemode! Use 0/1/2/3"));
                 return true;
         }
 
@@ -356,9 +468,9 @@ public class SSJECommands implements CommandExecutor {
         playerData.setGameMode(gameMode);
         ssjEssentials.getConfigs().savePlayerData(target);
         
-        target.sendMessage("§aGamemode set to " + gameMode.toString().toLowerCase());
+        target.sendMessage(formatMessage("§aGamemode set to " + gameMode.toString().toLowerCase()));
         if (sender != target) {
-            sender.sendMessage("§aSet " + target.getName() + "'s gamemode to " + gameMode.toString().toLowerCase());
+            sender.sendMessage(formatMessage("§aSet " + target.getName() + "'s gamemode to " + gameMode.toString().toLowerCase()));
         }
         
         return true;
@@ -382,16 +494,16 @@ public class SSJECommands implements CommandExecutor {
 
     private boolean handleReload(CommandSender sender) {
         if (!sender.hasPermission("ssjessentials.reload")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         try {
             ssjEssentials.reloadConfig();
-            sender.sendMessage("§aConfiguration reloaded successfully!");
+            sender.sendMessage(formatMessage("§aConfiguration reloaded successfully!"));
             return true;
         } catch (Exception e) {
-            sender.sendMessage("§cError reloading configuration: " + e.getMessage());
+            sender.sendMessage(formatMessage("§cError reloading configuration: " + e.getMessage()));
             return false;
         }
     }
@@ -399,7 +511,7 @@ public class SSJECommands implements CommandExecutor {
     @SuppressWarnings("deprecation")
     public boolean handleBanCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.banlist")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
@@ -407,40 +519,56 @@ public class SSJECommands implements CommandExecutor {
         Set<BanEntry> banEntries = Bukkit.getBanList(BanList.Type.NAME).getBanEntries();
         
         if (banEntries.isEmpty()) {
-            sender.sendMessage("§aThere are no banned players.");
+            sender.sendMessage(formatMessage("§aThere are no banned players."));
             return true;
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-        sender.sendMessage("§6§lBanned Players List:");
-        sender.sendMessage("§7§m----------------------------------------");
+        sender.sendMessage(formatMessage("§6§lBanned Players List:"));
+        sender.sendMessage(formatMessage("§7§m----------------------------------------"));
 
         for (@SuppressWarnings("rawtypes") BanEntry entry : banEntries) {
-            sender.sendMessage("§e" + entry.getTarget());
-            sender.sendMessage("§7Reason: §f" + entry.getReason());
-            sender.sendMessage("§7Banned by: §f" + entry.getSource());
-            sender.sendMessage("§7Banned on: §f" + dateFormat.format(entry.getCreated()));
+            sender.sendMessage(formatMessage("§e" + entry.getTarget()));
+            sender.sendMessage(formatMessage("§7Reason: §f" + entry.getReason()));
+            sender.sendMessage(formatMessage("§7Banned by: §f" + entry.getSource()));
+            sender.sendMessage(formatMessage("§7Banned on: §f" + dateFormat.format(entry.getCreated())));
             
             if (entry.getExpiration() != null) {
-                sender.sendMessage("§7Expires on: §f" + dateFormat.format(entry.getExpiration()));
+                sender.sendMessage(formatMessage("§7Expires on: §f" + dateFormat.format(entry.getExpiration())));
             } else {
-                sender.sendMessage("§7Expires: §cNever (Permanent)");
+                sender.sendMessage(formatMessage("§7Expires: §cNever (Permanent)"));
             }
-            sender.sendMessage("§7§m----------------------------------------");
+            sender.sendMessage(formatMessage("§7§m----------------------------------------"));
         }
         
         return true;
     }
 
-    private boolean handleGod(Player sender, Player target) {
-        if (!sender.hasPermission("ssjessentials.god" + (sender == target ? "" : ".others"))) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+    private boolean handleGod(CommandSender sender, String[] args) {
+        // If sender is not a player and no target is specified
+        if (!(sender instanceof Player) && args.length == 0) {
+            sender.sendMessage(formatMessage("§cUsage: /god <player>"));
             return true;
         }
 
-        if (target == null) {
-            sender.sendMessage("§cPlayer not found!");
-            return true;
+        // Get the target player - either the specified player or the sender
+        Player target;
+        if (args.length == 0) {
+            target = (Player) sender;
+            if (!sender.hasPermission("ssjessentials.god")) {
+                sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
+                return true;
+            }
+        } else {
+            if (!sender.hasPermission("ssjessentials.god.others")) {
+                sender.sendMessage(formatMessage("§cYou don't have permission to toggle god mode for others!"));
+                return true;
+            }
+            target = Bukkit.getPlayer(args[0]);
+            if (target == null) {
+                sender.sendMessage(formatMessage("§cPlayer not found!"));
+                return true;
+            }
         }
 
         SSJConfigs.PlayerData playerData = ssjEssentials.getConfigs().getPlayerData(target);
@@ -450,11 +578,11 @@ public class SSJECommands implements CommandExecutor {
 
         target.setInvulnerable(newGodState);
         
-        target.sendMessage(newGodState ? "§aGod mode enabled!" : "§cGod mode disabled!");
+        target.sendMessage(newGodState ? formatMessage("§aGod mode enabled!") : formatMessage("§cGod mode disabled!"));
         if (sender != target) {
             sender.sendMessage(newGodState ? 
-                "§aEnabled god mode for " + target.getName() : 
-                "§cDisabled god mode for " + target.getName());
+                formatMessage("§aEnabled god mode for " + target.getName()) : 
+                formatMessage("§cDisabled god mode for " + target.getName()));
         }
         return true;
     }
@@ -462,12 +590,12 @@ public class SSJECommands implements CommandExecutor {
     @SuppressWarnings("deprecation")
     private boolean handleUnban(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.unban")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /unban <player>");
+            sender.sendMessage(formatMessage("§cUsage: /unban <player>"));
             return true;
         }
 
@@ -476,21 +604,21 @@ public class SSJECommands implements CommandExecutor {
         // Check if player exists in offline players
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         if (!target.hasPlayedBefore() && !target.isOnline()) {
-            sender.sendMessage("§cPlayer has never joined the server!");
+            sender.sendMessage(formatMessage("§cPlayer has never joined the server!"));
             return true;
         }
 
         if (!Bukkit.getBanList(BanList.Type.NAME).isBanned(targetName)) {
-            sender.sendMessage("§cPlayer is not banned!");
+            sender.sendMessage(formatMessage("§cPlayer is not banned!"));
             return true;
         }
 
         Bukkit.getBanList(BanList.Type.NAME).pardon(targetName);
-        sender.sendMessage("§aUnbanned player: " + targetName);
+        sender.sendMessage(formatMessage("§aUnbanned player: " + targetName));
         
         if (ssjEssentials.getConfig().getBoolean("ban.broadcast", true)) {
             String unbannedBy = sender instanceof Player ? sender.getName() : "Console";
-            Bukkit.broadcastMessage("§a" + targetName + " has been unbanned by " + unbannedBy);
+            Bukkit.broadcastMessage(formatMessage("§a" + targetName + " has been unbanned by " + unbannedBy));
         }
         
         return true;
@@ -507,17 +635,17 @@ public class SSJECommands implements CommandExecutor {
         Player targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer != null) {
             if (!sender.hasPermission("ssjessentials.spawntp.others")) {
-                sender.sendMessage("§cYou don't have permission to teleport others to spawn!");
+                sender.sendMessage(formatMessage("§cYou don't have permission to teleport others to spawn!"));
                 return true;
             }
             teleportToSpawn(targetPlayer);
-            sender.sendMessage("§aTeleported " + targetPlayer.getName() + " to spawn!");
+            sender.sendMessage(formatMessage("§aTeleported " + targetPlayer.getName() + " to spawn!"));
             return true;
         }
 
         // If not a player, try to spawn entity
         if (!sender.hasPermission("ssjessentials.spawn.mob")) {
-            sender.sendMessage("§cYou don't have permission to spawn mobs!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to spawn mobs!"));
             return true;
         }
 
@@ -531,12 +659,12 @@ public class SSJECommands implements CommandExecutor {
                 Player targetLoc = Bukkit.getPlayer(args[3]);
                 if (targetLoc != null) {
                     if (!sender.hasPermission("ssjessentials.spawn.mob.tp")) {
-                        sender.sendMessage("§cYou don't have permission to spawn mobs at other players!");
+                        sender.sendMessage(formatMessage("§cYou don't have permission to spawn mobs at other players!"));
                         return true;
                     }
                     spawnLoc = targetLoc.getLocation();
                 } else {
-                    sender.sendMessage("§cTarget player not found!");
+                    sender.sendMessage(formatMessage("§cTarget player not found!"));
                     return true;
                 }
             }
@@ -548,7 +676,7 @@ public class SSJECommands implements CommandExecutor {
                 }
             }
             
-            String message = "§aSpawned " + amount + " " + entityType.toString().toLowerCase();
+            String message = formatMessage("§aSpawned " + amount + " " + entityType.toString().toLowerCase());
             if (health > 0) {
                 message += " with " + health + " health";
             }
@@ -558,7 +686,7 @@ public class SSJECommands implements CommandExecutor {
             sender.sendMessage(message);
             
         } catch (IllegalArgumentException e) {
-            sender.sendMessage("§cInvalid entity type, amount, or health value!");
+            sender.sendMessage(formatMessage("§cInvalid entity type, amount, or health value!"));
             return true;
         }
         return true;
@@ -567,97 +695,97 @@ public class SSJECommands implements CommandExecutor {
     private void teleportToSpawn(Player player) {
         Location spawn = ssjEssentials.getSpawnConfig().getSpawnLocation();
         if (spawn == null) {
-            player.sendMessage("§cSpawn location has not been set!");
+            player.sendMessage(formatMessage("§cSpawn location has not been set!"));
             return;
         }
         player.teleport(spawn);
-        player.sendMessage("§aTeleported to spawn!");
+        player.sendMessage(formatMessage("§aTeleported to spawn!"));
     }
 
     private boolean handleSetSpawn(Player sender) {
         if (!sender.hasPermission("ssjessentials.setspawn")) {
-            sender.sendMessage("§cYou don't have permission to set spawn!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to set spawn!"));
             return true;
         }
 
         ssjEssentials.getSpawnConfig().setSpawnLocation(sender.getLocation());
-        sender.sendMessage("§aSpawn location set!");
+        sender.sendMessage(formatMessage("§aSpawn location set!"));
         return true;
     }
 
     private boolean handleTeleportRequest(Player sender, String[] args) {
         if (args.length != 1) {
-            sender.sendMessage("§cUsage: /tpr <player>");
+            sender.sendMessage(formatMessage("§cUsage: /tpr <player>"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage("§cPlayer not found!");
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
         if (target == sender) {
-            sender.sendMessage("§cYou cannot teleport to yourself!");
+            sender.sendMessage(formatMessage("§cYou cannot teleport to yourself!"));
             return true;
         }
 
         ssjEssentials.getTeleportManager().createRequest(sender, target);
-        sender.sendMessage("§aTeleport request sent to " + target.getName());
-        target.sendMessage("§a" + sender.getName() + " wants to teleport to you.");
-        target.sendMessage("§aType /tpraccept to accept.");
+        sender.sendMessage(formatMessage("§aTeleport request sent to " + target.getName()));
+        target.sendMessage(formatMessage(sender.getName() + " wants to teleport to you."));
+        target.sendMessage(formatMessage("Type /tpraccept to accept."));
         return true;
     }
 
     private boolean handleTeleportAccept(Player sender) {
         if (!ssjEssentials.getTeleportManager().hasActiveRequest(sender)) {
-            sender.sendMessage("§cYou have no pending teleport requests!");
+            sender.sendMessage(formatMessage("§cYou have no pending teleport requests!"));
             return true;
         }
 
         Player requester = ssjEssentials.getTeleportManager().getRequester(sender);
         if (requester == null || !requester.isOnline()) {
-            sender.sendMessage("§cThe player who requested to teleport is no longer online!");
+            sender.sendMessage(formatMessage("§cThe player who requested to teleport is no longer online!"));
             ssjEssentials.getTeleportManager().removeRequest(sender);
             return true;
         }
 
         requester.teleport(sender.getLocation());
-        requester.sendMessage("§aTeleported to " + sender.getName());
-        sender.sendMessage("§a" + requester.getName() + " was teleported to you.");
+        requester.sendMessage(formatMessage("§aTeleported to " + sender.getName()));
+        sender.sendMessage(formatMessage(requester.getName() + " was teleported to you."));
         ssjEssentials.getTeleportManager().removeRequest(sender);
         return true;
     }
 
     private boolean handleTeleport(Player sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.tp.staff")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /tp <player> [target/spawn/x y z]");
+            sender.sendMessage(formatMessage("§cUsage: /tp <player> [target/spawn/x y z]"));
             return true;
         }
 
         Player player = Bukkit.getPlayer(args[0]);
         if (player == null) {
-            sender.sendMessage("§cPlayer not found!");
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
         if (args.length == 1) {
             // Teleport sender to player
             sender.teleport(player.getLocation());
-            sender.sendMessage("§aTeleported to " + player.getName());
+            sender.sendMessage(formatMessage("§aTeleported to " + player.getName()));
             return true;
         }
 
         if (args[1].equalsIgnoreCase("spawn")) {
             // Teleport player to spawn
             player.teleport(ssjEssentials.getSpawnConfig().getSpawnLocation());
-            player.sendMessage("§aYou were teleported to spawn");
-            sender.sendMessage("§aTeleported " + player.getName() + " to spawn");
+            player.sendMessage(formatMessage("§aYou were teleported to spawn"));
+            sender.sendMessage(formatMessage("§aTeleported " + player.getName() + " to spawn"));
             return true;
         }
 
@@ -669,11 +797,11 @@ public class SSJECommands implements CommandExecutor {
                 double z = Double.parseDouble(args[3]);
                 Location loc = new Location(player.getWorld(), x, y, z);
                 player.teleport(loc);
-                player.sendMessage("§aYou were teleported to " + x + " " + y + " " + z);
-                sender.sendMessage("§aTeleported " + player.getName() + " to coordinates");
+                player.sendMessage(formatMessage("§aYou were teleported to " + x + " " + y + " " + z));
+                sender.sendMessage(formatMessage("§aTeleported " + player.getName() + " to coordinates"));
                 return true;
             } catch (NumberFormatException e) {
-                sender.sendMessage("§cInvalid coordinates!");
+                sender.sendMessage(formatMessage("§cInvalid coordinates!"));
                 return true;
             }
         }
@@ -681,64 +809,64 @@ public class SSJECommands implements CommandExecutor {
         // Handle player to player teleport
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage("§cTarget player not found!");
+            sender.sendMessage(formatMessage("§cTarget player not found!"));
             return true;
         }
 
         player.teleport(target.getLocation());
-        player.sendMessage("§aYou were teleported to " + target.getName());
-        sender.sendMessage("§aTeleported " + player.getName() + " to " + target.getName());
+        player.sendMessage(formatMessage("§aYou were teleported to " + target.getName()));
+        sender.sendMessage(formatMessage("§aTeleported " + player.getName() + " to " + target.getName()));
         return true;
     }
 
-    private boolean handleKill(Player sender, String[] args) {
+    private boolean handleKill(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.kill")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /kill <player> OR /kill <entity>");
+            sender.sendMessage(formatMessage("§cUsage: /kill <player> OR /kill <entity>"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target != null) {
             target.setHealth(0);
-            sender.sendMessage("§aKilled " + target.getName());
+            sender.sendMessage(formatMessage("§aKilled " + target.getName()));
             return true;
         }
 
         // If no player found, try to kill entities (requires additional permission)
         if (!sender.hasPermission("ssjessentials.kill.entitys")) {
-            sender.sendMessage("§cPlayer not found and you don't have permission to kill entities!");
+            sender.sendMessage(formatMessage("§cPlayer not found and you don't have permission to kill entities!"));
             return true;
         }
 
         // Implementation for killing specific entity types can be added here
-        sender.sendMessage("§cEntity killing not implemented yet!");
+        sender.sendMessage(formatMessage("§cEntity killing not implemented yet!"));
         return true;
     }
 
-    private boolean handleKillAll(Player sender, String[] args) {
+    private boolean handleKillAll(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.kill.all")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (args.length > 0 && args[0].equalsIgnoreCase("entities")) {
             if (!sender.hasPermission("ssjessentials.kill.entitys")) {
-                sender.sendMessage("§cYou don't have permission to kill entities!");
+                sender.sendMessage(formatMessage("§cYou don't have permission to kill entities!"));
                 return true;
             }
             int count = 0;
-            for (Entity entity : sender.getWorld().getEntities()) {
+            for (Entity entity : ((Entity) sender).getWorld().getEntities()) {
                 if (!(entity instanceof Player)) {
                     entity.remove();
                     count++;
                 }
             }
-            sender.sendMessage("§aKilled " + count + " entities");
+            sender.sendMessage(formatMessage("§aKilled " + count + " entities"));
             return true;
         }
 
@@ -750,27 +878,27 @@ public class SSJECommands implements CommandExecutor {
             }
         }
 
-        sender.sendMessage("§aKilled " + count + " players");
+        sender.sendMessage(formatMessage("§aKilled " + count + " players"));
         return true;
     }
 
     @SuppressWarnings("deprecation")
-    private boolean handleBanPlayer(Player sender, String[] args) {
+    private boolean handleBanPlayer(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.ban") || !sender.hasPermission("ssjessentials.staff")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /ban <player> [reason]");
+            sender.sendMessage(formatMessage("§cUsage: /ban <player> [reason]"));
             return true;
         }
 
         String targetName = args[0];
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
 
-        if (target == null || !target.hasPlayedBefore()) {
-            sender.sendMessage("§cPlayer not found!");
+        if (!target.hasPlayedBefore() && !target.isOnline()) {
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
@@ -778,38 +906,33 @@ public class SSJECommands implements CommandExecutor {
             ? String.join(" ", Arrays.copyOfRange(args, 1, args.length))
             : ssjEssentials.getConfig().getString("ban.default-reason", "No reason specified");
 
-        // Ban the player using BanList
-        @SuppressWarnings({ "rawtypes" })
-        BanList banList = Bukkit.getBanList(BanList.Type.NAME);
-        banList.addBan(targetName, reason, (Date)null, sender.getName());
+        Bukkit.getBanList(BanList.Type.NAME).addBan(targetName, reason, null, sender.getName());
 
-        // Kick the player if they are online
         if (target.isOnline()) {
-            Player onlinePlayer = target.getPlayer();
-            onlinePlayer.kickPlayer(reason);
+            target.getPlayer().kickPlayer(reason);
         }
 
         if (ssjEssentials.getConfig().getBoolean("ban.broadcast", true)) {
-            Bukkit.broadcastMessage("§c" + targetName + " has been banned by " + sender.getName() + " for: " + reason);
+            Bukkit.broadcastMessage(formatMessage("§c" + targetName + " has been banned by " + sender.getName() + " for: " + reason));
         }
 
         return true;
     }
 
-    private boolean handleKickPlayer(Player sender, String[] args) {
+    private boolean handleKickPlayer(CommandSender sender, String[] args) {
         if (!sender.hasPermission("ssjessentials.kick") || !sender.hasPermission("ssjessentials.staff")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+            sender.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
             return true;
         }
 
         if (args.length < 1) {
-            sender.sendMessage("§cUsage: /kick <player> [reason]");
+            sender.sendMessage(formatMessage("§cUsage: /kick <player> [reason]"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage("§cPlayer not found!");
+            sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
@@ -817,13 +940,286 @@ public class SSJECommands implements CommandExecutor {
             ? String.join(" ", Arrays.copyOfRange(args, 1, args.length))
             : ssjEssentials.getConfig().getString("kick.default-reason", "No reason specified");
 
-        // Kick the player
         target.kickPlayer(reason);
 
         if (ssjEssentials.getConfig().getBoolean("kick.broadcast", true)) {
-            Bukkit.broadcastMessage("§c" + target.getName() + " has been kicked by " + sender.getName() + " for: " + reason);
+            Bukkit.broadcastMessage(formatMessage("§c" + target.getName() + " has been kicked by " + sender.getName() + " for: " + reason));
         }
 
+        return true;
+    }
+
+    private boolean handleWarp(Player player, String[] args) {
+        if (!player.hasPermission("ssjessentials.warp")) {
+            player.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            player.sendMessage(formatMessage("§cUsage: /warp <name>"));
+            return true;
+        }
+
+        String warpName = args[0];
+        Location warpLocation = ssjEssentials.getLocationManager().getWarp(warpName);
+        
+        if (warpLocation == null) {
+            player.sendMessage(formatMessage("§cWarp not found!"));
+            return true;
+        }
+
+        player.teleport(warpLocation);
+        player.sendMessage(formatMessage("§aTeleported to warp: " + warpName));
+        return true;
+    }
+
+    private boolean handleSetWarp(Player player, String[] args) {
+        if (!player.hasPermission("ssjessentials.setwarp")) {
+            player.sendMessage(formatMessage("§cYou don't have permission to set warps!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            player.sendMessage(formatMessage("§cUsage: /setwarp <name> [description]"));
+            return true;
+        }
+
+        String warpName = args[0];
+        String description = args.length > 1 ? 
+            String.join(" ", Arrays.copyOfRange(args, 1, args.length)) : 
+            "No description";
+
+        ssjEssentials.getLocationManager().setWarp(warpName, player.getLocation(), description);
+        player.sendMessage(formatMessage("§aWarp '" + warpName + "' has been set!"));
+        return true;
+    }
+
+    private boolean handleDelWarp(Player player, String[] args) {
+        if (!player.hasPermission("ssjessentials.setwarp.del")) {
+            player.sendMessage(formatMessage("§cYou don't have permission to delete warps!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            player.sendMessage(formatMessage("§cUsage: /delwarp <name>"));
+            return true;
+        }
+
+        String warpName = args[0];
+        if (ssjEssentials.getLocationManager().getWarp(warpName) == null) {
+            player.sendMessage(formatMessage("§cWarp not found!"));
+            return true;
+        }
+
+        ssjEssentials.getLocationManager().deleteWarp(warpName);
+        player.sendMessage(formatMessage("§aWarp '" + warpName + "' has been deleted!"));
+        return true;
+    }
+
+    public boolean handleWarpList(CommandSender sender) {
+        if (!sender.hasPermission("ssjessentials.warp.list")) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to list warps!"));
+            return true;
+        }
+
+        Set<String> warps = ssjEssentials.getLocationManager().getWarps();
+        if (warps == null || warps.isEmpty()) {
+            sender.sendMessage(formatMessage("§cNo warps have been set!"));
+            return true;
+        }
+
+        sender.sendMessage(formatMessage("§aAvailable warps:"));
+        for (String warp : warps) {
+            sender.sendMessage(formatMessage("§7- §f" + warp));
+        }
+        return true;
+    }
+
+    private boolean handleHome(Player player, String[] args) {
+        if (!player.hasPermission("ssjessentials.home")) {
+            player.sendMessage(formatMessage("§cYou don't have permission to use this command!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            player.sendMessage(formatMessage("§cUsage: /home <name>"));
+            return true;
+        }
+
+        String homeName = args[0];
+        Location homeLocation = ssjEssentials.getLocationManager().getHome(player, homeName);
+        
+        if (homeLocation == null) {
+            player.sendMessage(formatMessage("§cHome not found!"));
+            return true;
+        }
+
+        player.teleport(homeLocation);
+        player.sendMessage(formatMessage("§aTeleported to home: " + homeName));
+        return true;
+    }
+
+    private boolean handleSetHome(Player player, String[] args) {
+        if (!player.hasPermission("ssjessentials.sethome")) {
+            player.sendMessage(formatMessage("§cYou don't have permission to set homes!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            player.sendMessage(formatMessage("§cUsage: /sethome <name>"));
+            return true;
+        }
+
+        String homeName = args[0];
+        int maxHomes = ssjEssentials.getLocationManager().getMaxHomes(player);
+        Set<String> homes = ssjEssentials.getLocationManager().getHomes(player);
+        
+        if (homes.size() >= maxHomes && !homes.contains(homeName)) {
+            player.sendMessage(formatMessage("§cYou have reached your maximum number of homes! (" + maxHomes + ")"));
+            return true;
+        }
+
+        ssjEssentials.getLocationManager().setHome(player, homeName, player.getLocation());
+        player.sendMessage(formatMessage("§aHome '" + homeName + "' has been set! (" + (homes.size() + 1) + "/" + maxHomes + ")"));
+        return true;
+    }
+
+    private boolean handleDelHome(Player player, String[] args) {
+        if (!player.hasPermission("ssjessentials.sethome.del")) {
+            player.sendMessage(formatMessage("§cYou don't have permission to delete homes!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            player.sendMessage(formatMessage("§cUsage: /delhome <name>"));
+            return true;
+        }
+
+        String homeName = args[0];
+        if (ssjEssentials.getLocationManager().getHome(player, homeName) == null) {
+            player.sendMessage(formatMessage("§cHome not found!"));
+            return true;
+        }
+
+        ssjEssentials.getLocationManager().deleteHome(player, homeName);
+        player.sendMessage(formatMessage("§aHome '" + homeName + "' has been deleted!"));
+        return true;
+    }
+
+    public boolean handleHomeList(Player player) {
+        if (!player.hasPermission("ssjessentials.home.list")) {
+            player.sendMessage(formatMessage("§cYou don't have permission to list homes!"));
+            return true;
+        }
+
+        Set<String> homes = ssjEssentials.getLocationManager().getHomes(player);
+        if (homes == null || homes.isEmpty()) {
+            player.sendMessage(formatMessage("§cYou haven't set any homes!"));
+            return true;
+        }
+
+        player.sendMessage(formatMessage("§aYour homes:"));
+        for (String home : homes) {
+            player.sendMessage(formatMessage("§7- §f" + home));
+        }
+        return true;
+    }
+
+    private boolean handleEditWarp(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.setwarp.edit")) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to edit warps!"));
+            return true;
+        }
+
+        if (args.length < 2) {
+            sender.sendMessage(formatMessage("§cUsage: /editwarp <current name> <new name>"));
+            return true;
+        }
+
+        String currentName = args[0];
+        String newName = args[1];
+        Location warpLocation = ssjEssentials.getLocationManager().getWarp(currentName);
+        
+        if (warpLocation == null) {
+            sender.sendMessage(formatMessage("§cWarp not found!"));
+            return true;
+        }
+
+        ssjEssentials.getLocationManager().setWarp(newName, warpLocation, "");
+        ssjEssentials.getLocationManager().deleteWarp(currentName);
+        sender.sendMessage(formatMessage("§aWarp renamed from '" + currentName + "' to '" + newName + "'"));
+        return true;
+    }
+
+    private boolean handleResetWarp(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.setwarp.reset")) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to reset warps!"));
+            return true;
+        }
+
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(formatMessage("§cThis command can only be used by players!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            sender.sendMessage(formatMessage("§cUsage: /resetwarp <name>"));
+            return true;
+        }
+
+        String warpName = args[0];
+        if (ssjEssentials.getLocationManager().getWarp(warpName) == null) {
+            sender.sendMessage(formatMessage("§cWarp not found!"));
+            return true;
+        }
+
+        Player player = (Player) sender;
+        ssjEssentials.getLocationManager().setWarp(warpName, player.getLocation(), "");
+        sender.sendMessage(formatMessage("§aWarp '" + warpName + "' has been reset to your location!"));
+        return true;
+    }
+
+    private boolean handleWarpAll(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("ssjessentials.warp.all")) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to warp all players!"));
+            return true;
+        }
+
+        if (args.length < 1) {
+            sender.sendMessage(formatMessage("§cUsage: /warpall <warp name>"));
+            return true;
+        }
+
+        String warpName = args[0];
+        Location warpLocation = ssjEssentials.getLocationManager().getWarp(warpName);
+        
+        if (warpLocation == null) {
+            sender.sendMessage(formatMessage("§cWarp not found!"));
+            return true;
+        }
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.teleport(warpLocation);
+            player.sendMessage(formatMessage("§aYou have been teleported to warp: " + warpName));
+        }
+        
+        sender.sendMessage(formatMessage("§aAll players have been teleported to warp: " + warpName));
+        return true;
+    }
+
+    private boolean handleSpawnAll(CommandSender sender) {
+        if (!sender.hasPermission("ssjessentials.spawn.all")) {
+            sender.sendMessage(formatMessage("§cYou don't have permission to spawn all players!"));
+            return true;
+        }
+
+        Location spawnLocation = ssjEssentials.getSpawnConfig().getSpawnLocation();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.teleport(spawnLocation);
+            player.sendMessage(formatMessage("§aYou have been teleported to spawn"));
+        }
+        
+        sender.sendMessage(formatMessage("§aAll players have been teleported to spawn"));
         return true;
     }
 } 

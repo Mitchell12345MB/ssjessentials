@@ -27,10 +27,16 @@ tempban:
   # Whether to broadcast tempbans
   broadcast: true
 
-# Teleport Settings
+# Teleport tp Settings
 teleport:
-  # Timeout for teleport requests (in milliseconds)
-  request-timeout: 60000
+  # Timeout for teleport requests (/tpr) (in milliseconds)
+  teleport-request-timeout: 60000
+
+  # Delay for using /tpr
+  teleport-request-delay: 1000
+
+  # Delay for using /warp
+  teleport-warp-delay: 1000
 
 # Ban Settings
 ban:
@@ -45,3 +51,93 @@ kick:
   broadcast: true
   # Default kick reason if none provided
   default-reason: "No reason specified"
+
+# Home Settings
+home:
+  # Maximum number of homes for ssjessentials.default
+  max-homes: 3
+  # Maximum number of homes for ssjessentials.mod
+  max-homes-mod: 20
+  # Maximum number of homes for ssjessentials.admin
+  max-homes-admin: 1000
+
+
+# Permissions Settings
+permissions:
+  # Default permission for all players
+  essentials.default:
+    - ssjessentials.tpr
+    - ssjessentials.tpr.accept
+    - ssjessentials.warp
+    - ssjessentials.warp.list
+    - ssjessentials.home
+    - ssjessentials.home.list
+  
+  # Permission for moderators
+  essentials.mod:
+    - ssjessentials.tpr
+    - ssjessentials.tpr.accept
+    - ssjessentials.warp
+    - ssjessentials.warp.list
+    - ssjessentials.home
+    - ssjessentials.home.list
+    - ssjessentials.sethome
+    - ssjessentials.sethome.del
+    - ssjessentials.sethome.edit
+    - ssjessentials.sethome.reset
+    - ssjessentials.ban
+    - ssjessentials.tempban
+    - ssjessentials.kick
+    - ssjessentials.freeze
+    - ssjessentials.freeze.others
+    - ssjessentials.vanish
+
+  # Permission for admins
+  essentials.admin:
+    - ssjessentials.tpr
+    - ssjessentials.tpr.accept
+    - ssjessentials.warp
+    - ssjessentials.warp.list
+    - ssjessentials.home
+    - ssjessentials.home.list
+    - ssjessentials.sethome
+    - ssjessentials.sethome.del
+    - ssjessentials.sethome.edit
+    - ssjessentials.sethome.reset
+    - ssjessentials.setwarp
+    - ssjessentials.setwarp.del
+    - ssjessentials.setwarp.edit
+    - ssjessentials.setwarp.reset
+    - ssjessentials.resetwarp
+    - ssjessentials.warpall
+    - ssjessentials.spawn
+    - ssjessentials.spawn.all
+    - ssjessentials.setspawn
+    - ssjessentials.fly
+    - ssjessentials.fly.others
+    - ssjessentials.feed
+    - ssjessentials.feed.others
+    - ssjessentials.heal
+    - ssjessentials.heal.others
+    - ssjessentials.god
+    - ssjessentials.god.others
+    - ssjessentials.vanish
+    - ssjessentials.vanish.others
+    - ssjessentials.freeze
+    - ssjessentials.freeze.others
+    - ssjessentials.kick
+    - ssjessentials.kick.all
+    - ssjessentials.ban
+    - ssjessentials.tempban
+    - ssjessentials.reload
+    - ssjessentials.banlist
+    - ssjessentials.nick
+    - ssjessentials.nick.others
+    - ssjessentials.gamemode
+    - ssjessentials.gamemode.others
+    - ssjessentials.kill
+    - ssjessentials.kill.all
+    - ssjessentials.kill.entitys
+    - ssjessentials.spawn
+    - ssjessentials.spawn.all
+    - ssjessentials.setspawn

@@ -51,6 +51,12 @@ public class SSJConfigs {
         data.setGameMode(GameMode.valueOf(config.getString("gamemode", "SURVIVAL")));
         data.setNickname(config.getString("nickname", null));
         
+        String group = config.getString("group", "default").toLowerCase();
+        if (group == null || group.isEmpty()) {
+            group = "default";
+        }
+        data.setGroup(group);
+        
         playerData.put(player.getUniqueId(), data);
         
         if (data.getNickname() != null) {
@@ -73,6 +79,7 @@ public class SSJConfigs {
             config.set("godmode", data.isGodMode());
             config.set("gamemode", data.getGameMode().toString());
             config.set("nickname", data.getNickname());
+            config.set("group", data.getGroup());
             
             try {
                 config.save(playerFile);
@@ -108,6 +115,7 @@ public class SSJConfigs {
         private boolean isGodMode = false;
         private GameMode gameMode = GameMode.SURVIVAL;
         private String nickname = null;
+        private String group = "default";
 
         public boolean isFlying() {
             return isFlying;
@@ -155,6 +163,14 @@ public class SSJConfigs {
 
         public void setGodMode(boolean godMode) {
             this.isGodMode = godMode;
+        }
+
+        public String getGroup() {
+            return group;
+        }
+
+        public void setGroup(String group) {
+            this.group = group;
         }
     }
 } 

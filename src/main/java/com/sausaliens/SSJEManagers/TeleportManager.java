@@ -14,7 +14,7 @@ public class TeleportManager {
 
     public TeleportManager(SSJEssentials ssjEssentials) {
         this.ssjEssentials = ssjEssentials;
-        this.requestTimeout = ssjEssentials.getConfig().getLong("teleport.request-timeout", 60000);
+        this.requestTimeout = ssjEssentials.getConfig().getLong("teleport.teleport-request-timeout", 60000);
     }
 
     public void createRequest(Player requester, Player target) {

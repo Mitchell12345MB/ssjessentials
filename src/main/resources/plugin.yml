@@ -90,8 +90,121 @@ commands:
     description: Kicks a target player
     usage: /<command> <player>
     permission: ssjessentials.kick
+  /ban:
+    description: Provides a list of banned players
+    usage: /<command>
+    permission: ssjessentials.banlist
+  kickall:
+    description: Kicks all players
+    usage: /<command>
+    permission: ssjessentials.kick.all
+  sethome:
+    description: Sets a home location
+    usage: /<command> <name>
+    permission: ssjessentials.sethome
+  delhome:
+    description: Deletes a home location
+    usage: /<command> <name>
+    permission: ssjessentials.sethome.del
+  edithome:
+    description: Edits a home name
+    usage: /<command> <current name> <new name>
+    permission: ssjessentials.sethome.edit
+  resethome:
+    description: Resets a home location
+    usage: /<command> <name>
+    permission: ssjessentials.sethome.reset
+  setwarp:
+    description: Sets a warp location
+    usage: /<command> <name>
+    permission: ssjessentials.setwarp
+  delwarp:
+    description: Deletes a warp location
+    usage: /<command> <name>
+    permission: ssjessentials.setwarp.del
+  editwarp:
+    description: Edits a warp name
+    usage: /<command> <current name> <new name>
+    permission: ssjessentials.setwarp.edit
+  resetwarp:
+    description: Resets a warp location
+    usage: /<command> <name>
+    permission: ssjessentials.setwarp.reset
+  warp:
+    description: Teleports to a warp location
+    usage: /<command> <name>
+    permission: ssjessentials.warp
+  warpall:
+    description: Teleports all players to a warp location
+    usage: /<command> <name>
+    permission: ssjessentials.warp.all
+  spawnall:
+    description: Spawns all players to the spawn point
+    usage: /<command>
+    permission: ssjessentials.spawn.all
+  home:
+    description: Teleports to a home location
+    usage: /<command> <name>
+    permission: ssjessentials.home
+  /warp:
+    description: Provides a list of warp locations
+    usage: /<command>
+    permission: ssjessentials.warp.list
+  /home:
+    description: Provides a list of home locations
+    usage: /<command>
+    permission: ssjessentials.home.list
+  group:
+    description: Manage permission groups
+    usage: |
+      /<command> create <groupname> - Create a new group
+      /<command> delete <groupname> - Delete a group
+      /<command> addperm <groupname> <permission> - Add permission to group
+      /<command> removeperm <groupname> <permission> - Remove permission from group
+      /<command> setgroup <player> <groupname> - Set player's group
+      /<command> list - List all groups
+      /<command> info <groupname> - Show group permissions
+    permission: ssjessentials.group
 
 permissions:
+  ssjessentials.default:
+    description: Default permissions for all players
+    default: true
+    children:
+      ssjessentials.tpr: true
+      ssjessentials.tpr.accept: true
+      ssjessentials.warp: true
+      ssjessentials.warp.list: true
+      ssjessentials.home: true
+      ssjessentials.home.list: true
+      ssjessentials.sethome: true
+
+  ssjessentials.mod:
+    description: Moderator permissions
+    default: op
+    children:
+      ssjessentials.default: true
+      ssjessentials.ban: true
+      ssjessentials.tempban: true
+      ssjessentials.kick: true
+      ssjessentials.freeze: true
+      ssjessentials.freeze.others: true
+      ssjessentials.vanish: true
+      ssjessentials.nick: true
+      ssjessentials.nick.others: true
+      ssjessentials.gamemode: true
+      ssjessentials.gamemode.others: true
+      ssjessentials.tp.staff: true
+      ssjessentials.kill: true
+      ssjessentials.kill.player: true
+
+  ssjessentials.admin:
+    description: Admin permissions
+    default: op
+    children:
+      ssjessentials.mod: true
+      ssjessentials.*: true
+
   ssjessentials.fly:
     description: Allows player to toggle flight mode for themselves
     default: op
@@ -185,9 +298,44 @@ permissions:
   ssjessentials.ban:
     description: Allows player to ban a target player
     default: op
-  ssjessentials.staff:
-    description: Manage staff commands.
-    default: op
   ssjessentials.kick:
     description: Allows player to kick a target player
     default: op
+  ssjessentials.kick.all:
+    description: Allows player to kick all players
+    default: op
+  ssjessentials.sethome:
+    description: Allows player to set a home location
+    default: op
+  ssjessentials.sethome.del:
+    description: Allows player to delete a home location
+    default: op
+  ssjessentials.sethome.edit:
+    description: Allows player to edit a home location name
+    default: op
+  ssjessentials.sethome.reset:
+    description: Allows player to reset a home location
+    default: op
+  ssjessentials.setwarp:
+    description: Allows player to set a warp location
+    default: op
+  ssjessentials.setwarp.del:
+    description: Allows player to delete a warp location
+    default: op
+  ssjessentials.setwarp.edit:
+    description: Allows player to edit a warp location name
+    default: op
+  ssjessentials.setwarp.reset:
+    description: Allows player to reset a warp location
+    default: op
+  ssjessentials.home:
+    description: Allows player to teleport to a home location
+    default: op
+  ssjessentials.group:
+    description: Allows managing permission groups
+    default: op
+  ssjessentials.group.admin:
+    description: Gives access to all group management commands
+    default: op
+    children:
+      - ssjessentials.group
