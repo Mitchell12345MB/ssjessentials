@@ -356,7 +356,7 @@ public class SSJECommands implements CommandExecutor {
         return true;
     }
 
-    private boolean handleNick(CommandSender sender, String[] args) {
+    public boolean handleNick(CommandSender sender, String[] args) {
         if (args.length < 1) {
             sender.sendMessage(formatMessage("§cUsage: /nick <nickname> or /nick <player> <nickname>"));
             return true;
@@ -387,6 +387,24 @@ public class SSJECommands implements CommandExecutor {
                 return true;
             }
             nickname = args[0];
+        }
+
+        // Handle "none" option to remove nickname
+        if (nickname.equalsIgnoreCase("none")) {
+            // Save nickname in player data
+            SSJConfigs.PlayerData playerData = ssjEssentials.getConfigs().getPlayerData(target);
+            playerData.setNickname(null);
+            ssjEssentials.getConfigs().savePlayerData(target);
+
+            target.setDisplayName(target.getName());
+            // Update tab list name with group prefix
+            ssjEssentials.getGroupManager().updatePlayerTabName(target);
+            
+            target.sendMessage(formatMessage("§aYour nickname has been removed."));
+            if (sender != target) {
+                sender.sendMessage(formatMessage("§aRemoved " + target.getName() + "'s nickname."));
+            }
+            return true;
         }
 
         int maxLength = ssjEssentials.getConfig().getInt("nickname.max-length", 16);
@@ -709,7 +727,7 @@ public class SSJECommands implements CommandExecutor {
         }
 
         ssjEssentials.getSpawnConfig().setSpawnLocation(sender.getLocation());
-        sender.sendMessage(formatMessage("§aSpawn location set!"));
+        sender.sendMessage(formatMessage("��aSpawn location set!"));
         return true;
     }
 

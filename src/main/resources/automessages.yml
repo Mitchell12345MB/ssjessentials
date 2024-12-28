@@ -1,0 +1,21 @@
+# Auto Messages Configuration
+# Interval in seconds between messages
+interval: 300  # 5 minutes by default
+
+# Whether to randomize the order of messages
+random: true
+
+# Whether to keep running messages when server is empty
+run_while_server_is_empty: false
+
+# Whether to display a message when server becomes un-empty
+display_message_when_server_becomes_un_empty: true
+
+# List of messages to broadcast
+# You can use color codes with &
+# You can use \n for new lines
+messages:
+  - '&b&lWelcome &7to the server!'
+  - '&a&lDid you know? &7You can use /help to see available commands!'
+  - '&e&lTip: &7Use /spawn to return to spawn!'
+  - '&6&lServer Rules:\n&71. Be respectful\n&72. No griefing\n&73. Have fun!' 

@@ -1,6 +1,9 @@
 package com.sausaliens.SSJEListeners;
 
 import com.sausaliens.SSJEssentials;
+import org.bukkit.Bukkit;
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,9 +19,28 @@ public class ChatListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
-        String prefix = plugin.getGroupManager().getPlayerPrefix(event.getPlayer());
-        String suffix = plugin.getGroupManager().getPlayerSuffix(event.getPlayer());
-        String playerName = event.getPlayer().getDisplayName();
+        Player sender = event.getPlayer();
+        String message = event.getMessage();
+        String prefix = plugin.getGroupManager().getPlayerPrefix(sender);
+        String suffix = plugin.getGroupManager().getPlayerSuffix(sender);
+        String playerName = sender.getDisplayName();
+        
+        // Check if sender is staff
+        if (sender.hasPermission("ssjessentials.mod") || sender.hasPermission("ssjessentials.admin")) {
+            // Check for player mentions in the message
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                String targetName = target.getName();
+                String targetNick = target.getDisplayName();
+                
+                // If the message contains the player's full name or nickname
+                if (message.contains(targetName) || message.contains(targetNick)) {
+                    // Play sound only for the mentioned player
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        target.playSound(target.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+                    });
+                }
+            }
+        }
         
         // Build the format based on whether there's a prefix/suffix
         StringBuilder format = new StringBuilder();

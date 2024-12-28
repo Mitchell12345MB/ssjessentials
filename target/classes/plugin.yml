@@ -5,6 +5,8 @@ api-version: 1.17
 prefix: SSJEssentials
 authors: [ SauSAliens ]
 description: Simple essentials plugin
+depend: [ProtocolLib]
+
 commands:
   fly:
     description: Toggles flight mode
@@ -47,9 +49,9 @@ commands:
     usage: /<command>
     permission: ssjessentials.banlist
   god:
-    description: Toggles god mode
-    usage: /<command> [player]
-    permission: ssjessentials.god
+    description: Toggle god mode
+    usage: /<command>
+    aliases: [godmode]
   unban:
     description: Unbans a banned player
     usage: /<command> <player>
@@ -165,6 +167,36 @@ commands:
       /<command> list - List all groups
       /<command> info <groupname> - Show group permissions
     permission: ssjessentials.group
+  am:
+    description: Manage auto messages
+    usage: |
+      /<command> add <message> - Add a new auto message
+      /<command> remove <index> - Remove an auto message
+      /<command> list - List all auto messages
+      /<command> interval <seconds> - Set message interval
+      /<command> random <true/false> - Toggle random order
+      /<command> reload - Reload auto messages
+    aliases: [automessage, automsg]
+  invsee:
+    description: View and edit a player's inventory
+    usage: /<command> <player>
+    permission: ssjessentials.invsee
+  pm:
+    description: Send a private message to another player
+    usage: /pm <player> <message>
+    aliases: [msg, tell, whisper]
+  whois:
+    description: Get detailed information about a player
+    usage: /whois <player>
+    permission: ssjessentials.whois
+  socialspy:
+    description: Toggle social spy mode to see all private messages
+    usage: /socialspy
+    permission: ssjessentials.socialspy
+  back:
+    description: Teleport to your previous location
+    usage: /back [player]
+    permission: ssjessentials.back
 
 permissions:
   ssjessentials.default:
@@ -178,6 +210,7 @@ permissions:
       ssjessentials.home: true
       ssjessentials.home.list: true
       ssjessentials.sethome: true
+      ssjessentials.back: true
 
   ssjessentials.mod:
     description: Moderator permissions
@@ -197,6 +230,9 @@ permissions:
       ssjessentials.tp.staff: true
       ssjessentials.kill: true
       ssjessentials.kill.player: true
+      ssjessentials.invsee: true
+      ssjessentials.socialspy: true
+      ssjessentials.back.other: true
 
   ssjessentials.admin:
     description: Admin permissions
@@ -204,6 +240,14 @@ permissions:
     children:
       ssjessentials.mod: true
       ssjessentials.*: true
+      ssjessentials.god: true
+      ssjessentials.am: true
+      ssjessentials.warpsign: true
+      ssjessentials.whois: true
+
+  ssjessentials.warpsign:
+    description: Allows creation of warp signs
+    default: op
 
   ssjessentials.fly:
     description: Allows player to toggle flight mode for themselves
@@ -257,7 +301,7 @@ permissions:
     description: Allows player to manage the ban list
     default: op
   ssjessentials.god:
-    description: Allows player to toggle god mode
+    description: Allows toggling god mode
     default: op
   ssjessentials.god.others:
     description: Allows player to toggle god mode for others
@@ -339,3 +383,21 @@ permissions:
     default: op
     children:
       - ssjessentials.group
+  ssjessentials.am:
+    description: Allows managing auto messages
+    default: op
+  ssjessentials.pm:
+    description: Allows sending private messages
+    default: true
+  ssjessentials.whois:
+    description: Allows viewing detailed player information
+    default: op
+  ssjessentials.socialspy:
+    description: Allows viewing all private messages
+    default: op
+  ssjessentials.back:
+    description: Allows player to teleport to their previous location
+    default: op
+  ssjessentials.back.other:
+    description: Allows player to teleport to another player's previous location
+    default: op

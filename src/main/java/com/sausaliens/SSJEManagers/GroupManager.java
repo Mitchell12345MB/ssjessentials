@@ -256,15 +256,13 @@ public class GroupManager {
     public void updatePlayerTabName(Player player) {
         String groupName = getPlayerGroup(player);
         String prefix = getGroupPrefix(groupName);
-        String displayName = player.getName();
         
-        // If player has a nickname, use it instead
+        // Get player data first
         SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
-        if (playerData.getNickname() != null) {
-            displayName = playerData.getNickname();
-        }
+        String displayName = playerData.getNickname() != null ? playerData.getNickname() : player.getName();
         
-        // Set the tab list name with the prefix
+        // Set both display name and tab list name
+        player.setDisplayName(displayName);
         player.setPlayerListName(prefix + displayName);
     }
 

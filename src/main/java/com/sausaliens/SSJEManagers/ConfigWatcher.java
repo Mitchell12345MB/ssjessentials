@@ -18,7 +18,9 @@ public class ConfigWatcher {
         // List of config files to watch
         this.watchedFiles = new File[]{
             new File(plugin.getDataFolder(), "config.yml"),
-            new File(plugin.getDataFolder(), "groups.yml")
+            new File(plugin.getDataFolder(), "groups.yml"),
+            new File(plugin.getDataFolder(), "spawn.yml"),
+            new File(plugin.getDataFolder(), "automessages.yml")
         };
 
         // Initialize last modified times

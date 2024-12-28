@@ -1,0 +1,25 @@
+groups:
+  default:
+    permissions:
+    - ssjessentials.default
+    prefix: ''
+    suffix: ''
+
+  mod:
+    permissions:
+    - ssjessentials.mod
+    prefix: '[&bMod&f]'
+    suffix: ''
+
+  admin:
+    permissions:
+    - ssjessentials.admin
+    prefix: '[&3Admin&f]'
+    suffix: ''
+
+  owner:
+    permissions:
+    - ssjessentials.*
+    - '*.*'
+    prefix: '[&cOwner&f]'
+    suffix: ''

@@ -72,6 +72,7 @@ permissions:
     - ssjessentials.warp.list
     - ssjessentials.home
     - ssjessentials.home.list
+    - ssjessentials.back
   
   # Permission for moderators
   essentials.mod:
@@ -91,6 +92,7 @@ permissions:
     - ssjessentials.freeze
     - ssjessentials.freeze.others
     - ssjessentials.vanish
+    - ssjessentials.back.other
 
   # Permission for admins
   essentials.admin:
@@ -141,3 +143,28 @@ permissions:
     - ssjessentials.spawn
     - ssjessentials.spawn.all
     - ssjessentials.setspawn
+    - ssjessentials.back
+    - ssjessentials.back.other
+
+# Tab List Settings
+tablist:
+  enabled: true
+  header: '&b&lWelcome to &e&lmc.saus-it.io &b&l| &e&lSSJPL'
+  footer: '&7Online Players: &f%online%/%max%'
+  update-interval: 20 # Update interval in ticks (20 ticks = 1 second)
+
+# Welcome Message Settings
+welcome:
+  enabled: true
+  # Message broadcast to all players
+  broadcast_message:
+    - '&b&l&m                                                                 '
+    - '&b&lWelcome &e&l%player% &b&lto &e&lSauS-IT &b&l| &e&lSSJPL Server&b&l!'
+    - '&b&l&m                                                                 '
+  # Message shown only to the new player
+  private_message:
+    - '&b&l&m                                                 '
+    - '&7Make sure to do &e/ssj start &7to use the SSJ Plugin.'
+    - '&b&l&m                                                 '
+  # Whether to show welcome message to returning players
+  show_to_returning_players: false

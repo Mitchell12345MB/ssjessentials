@@ -32,5 +32,12 @@ public class SSJECommandListener implements Listener {
             event.setCancelled(true);
             plugin.getCommandExecutor().handleWarpList(event.getPlayer());
         }
+
+        // nick none
+        if (message.startsWith("//nick none")) {
+            event.setCancelled(true);
+            String[] args = message.substring(2).trim().split("\\s+");
+            plugin.getCommandExecutor().handleNick(event.getPlayer(), args);
+        }
     }
 } 
