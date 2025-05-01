@@ -40,44 +40,38 @@ public class WhoisCommand implements CommandExecutor, TabCompleter {
         }
 
         // Try to find player by name or nickname
-        Player target = null;
-        String searchName = args[0].toLowerCase();
+        final String searchName = args[0].toLowerCase();
+        final Player target = Bukkit.getPlayer(searchName);
 
-        // First try exact name match
-        target = Bukkit.getPlayer(searchName);
-
-        // If not found, try nickname match
         if (target == null) {
             for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                String nickname = plugin.getConfigs().getPlayerData(onlinePlayer).getNickname();
-                if (nickname != null && nickname.toLowerCase().equals(searchName)) {
-                    target = onlinePlayer;
-                    break;
-                }
+                final Player candidate = onlinePlayer;
+                plugin.getConfigs().getPlayerDataAsync(candidate).thenAccept(playerData -> {
+                    if (playerData != null && playerData.getNickname() != null && playerData.getNickname().toLowerCase().equals(searchName)) {
+                        sendWhoisInfo(sender, candidate, playerData);
+                    }
+                });
             }
-        }
-
-        if (target == null) {
             sender.sendMessage(formatMessage("§cPlayer not found!"));
             return true;
         }
 
-        // Get player information
-        Location loc = target.getLocation();
-        String nickname = plugin.getConfigs().getPlayerData(target).getNickname();
-        String ip = target.getAddress().getAddress().getHostAddress();
+        plugin.getConfigs().getPlayerDataAsync(target).thenAccept(playerData -> {
+            sendWhoisInfo(sender, target, playerData);
+        });
+        return true;
+    }
 
-        // Send information
+    private void sendWhoisInfo(CommandSender sender, Player target, com.sausaliens.SSJEConfig.SSJConfigs.PlayerData playerData) {
+        Location loc = target.getLocation();
+        String nickname = playerData != null ? playerData.getNickname() : null;
+        String ip = target.getAddress().getAddress().getHostAddress();
         sender.sendMessage(formatMessage("§6=== Player Information for " + target.getName() + " §6==="));
         sender.sendMessage(formatMessage("§7Real Name: §f" + target.getName()));
         sender.sendMessage(formatMessage("§7Nickname: §f" + (nickname != null ? nickname : "None")));
         sender.sendMessage(formatMessage("§7IP Address: §f" + ip));
         sender.sendMessage(formatMessage("§7World: §f" + target.getWorld().getName()));
-        sender.sendMessage(formatMessage("§7Location: §fX: " + String.format("%.2f", loc.getX()) + 
-                                      ", Y: " + String.format("%.2f", loc.getY()) + 
-                                      ", Z: " + String.format("%.2f", loc.getZ())));
-
-        return true;
+        sender.sendMessage(formatMessage("§7Location: §fX: " + String.format("%.2f", loc.getX()) + ", Y: " + String.format("%.2f", loc.getY()) + ", Z: " + String.format("%.2f", loc.getZ())));
     }
 
     @Override
@@ -88,19 +82,10 @@ public class WhoisCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 1) {
             List<String> names = new ArrayList<>();
-            
-            // Add online player names
             names.addAll(Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .collect(Collectors.toList()));
-            
-            // Add nicknames
-            names.addAll(Bukkit.getOnlinePlayers().stream()
-                    .map(player -> plugin.getConfigs().getPlayerData(player).getNickname())
-                    .filter(nickname -> nickname != null)
-                    .collect(Collectors.toList()));
-            
-            // Filter based on input
+            // Nicknames are loaded async, so we can't provide them synchronously here
             return names.stream()
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());

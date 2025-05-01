@@ -10,6 +10,7 @@ import com.sausaliens.SSJEConfig.SSJConfigs;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GroupManager {
     private final SSJEssentials plugin;
@@ -18,6 +19,12 @@ public class GroupManager {
     private final Map<String, Set<String>> groupPermissions;
     private final Map<String, String> groupPrefixes;
     private final Map<String, String> groupSuffixes;
+    
+    // Cache for player groups to reduce lookups to PlayerData system
+    private final Map<UUID, String> playerGroupCache = new ConcurrentHashMap<>();
+    
+    // Track if groups config needs to be saved
+    private boolean groupsDirty = false;
 
     public GroupManager(SSJEssentials plugin) {
         this.plugin = plugin;
@@ -26,6 +33,14 @@ public class GroupManager {
         this.groupPrefixes = new HashMap<>();
         this.groupSuffixes = new HashMap<>();
         loadGroups();
+        
+        // Schedule regular saving of data if changes are made
+        plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+            if (groupsDirty) {
+                saveGroups();
+                groupsDirty = false;
+            }
+        }, 6000L, 6000L); // Save every 5 minutes (20 ticks * 60 seconds * 5)
     }
 
     public void loadGroups() {
@@ -61,6 +76,9 @@ public class GroupManager {
             String suffix = groupsConfig.getString(groupPath + ".suffix", "");
             groupSuffixes.put(lowercaseGroupName, ChatColor.translateAlternateColorCodes('&', suffix));
         }
+        
+        // Clear player group cache when reloading groups
+        playerGroupCache.clear();
     }
 
     private void createDefaultGroups() {
@@ -176,14 +194,16 @@ public class GroupManager {
         groupPrefixes.remove(lowercaseGroupName);
         groupSuffixes.remove(lowercaseGroupName);
         
-        // Update players who were in this group to default
+        // Update players who were in this group to default (async)
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (getPlayerGroup(player).equalsIgnoreCase(groupName)) {
-                setPlayerGroup(player, "default");
-            }
+            getPlayerGroupAsync(player, group -> {
+                if (group.equalsIgnoreCase(groupName)) {
+                    setPlayerGroupAsync(player, "default", null);
+                }
+            });
         }
         
-        saveGroups();
+        groupsDirty = true;
         return true;
     }
 
@@ -195,7 +215,7 @@ public class GroupManager {
 
         groupsConfig.set("groups." + lowercaseGroupName + ".prefix", prefix);
         groupPrefixes.put(lowercaseGroupName, ChatColor.translateAlternateColorCodes('&', prefix));
-        saveGroups();
+        groupsDirty = true;
         return true;
     }
 
@@ -207,7 +227,7 @@ public class GroupManager {
 
         groupsConfig.set("groups." + lowercaseGroupName + ".suffix", suffix);
         groupSuffixes.put(lowercaseGroupName, ChatColor.translateAlternateColorCodes('&', suffix));
-        saveGroups();
+        groupsDirty = true;
         return true;
     }
 
@@ -219,12 +239,20 @@ public class GroupManager {
         return groupSuffixes.getOrDefault(groupName.toLowerCase(), "");
     }
 
+    // Deprecated: Use getPlayerGroupAsync instead
+    @Deprecated
     public String getPlayerPrefix(Player player) {
+        // Use async version in new code
+        plugin.getLogger().warning("[DEPRECATED] getPlayerPrefix called synchronously. Use async version instead.");
         String groupName = getPlayerGroup(player);
         return getGroupPrefix(groupName);
     }
 
+    // Deprecated: Use getPlayerGroupAsync instead
+    @Deprecated
     public String getPlayerSuffix(Player player) {
+        // Use async version in new code
+        plugin.getLogger().warning("[DEPRECATED] getPlayerSuffix called synchronously. Use async version instead.");
         String groupName = getPlayerGroup(player);
         return getGroupSuffix(groupName);
     }
@@ -237,7 +265,7 @@ public class GroupManager {
 
         permissions.add(permission);
         groupsConfig.set("groups." + groupName.toLowerCase() + ".permissions", new ArrayList<>(permissions));
-        saveGroups();
+        groupsDirty = true;
         return true;
     }
 
@@ -249,40 +277,114 @@ public class GroupManager {
 
         permissions.remove(permission);
         groupsConfig.set("groups." + groupName.toLowerCase() + ".permissions", new ArrayList<>(permissions));
-        saveGroups();
+        groupsDirty = true;
         return true;
     }
 
     public void updatePlayerTabName(Player player) {
-        String groupName = getPlayerGroup(player);
-        String prefix = getGroupPrefix(groupName);
-        
-        // Get player data first
-        SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
-        String displayName = playerData.getNickname() != null ? playerData.getNickname() : player.getName();
-        
-        // Set both display name and tab list name
-        player.setDisplayName(displayName);
-        player.setPlayerListName(prefix + displayName);
+        getPlayerGroupAsync(player, groupName -> {
+            String prefix = getGroupPrefix(groupName);
+            // Get player data first
+            SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
+            String displayName = playerData != null && playerData.getNickname() != null ? playerData.getNickname() : player.getName();
+            // Set both display name and tab list name
+            player.setDisplayName(displayName);
+            player.setPlayerListName(prefix + displayName);
+        });
     }
 
+    // Async version of setPlayerGroup
+    public void setPlayerGroupAsync(Player player, String groupName, Runnable callback) {
+        plugin.getConfigs().getPlayerDataAsync(player).thenAccept(playerData -> {
+            if (playerData == null) {
+                plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in setPlayerGroupAsync");
+                return;
+            }
+            playerData.setGroup(groupName.toLowerCase());
+            plugin.getConfigs().savePlayerData(player);
+            // Update cache
+            playerGroupCache.put(player.getUniqueId(), groupName.toLowerCase());
+            // Update the player's tab list name
+            updatePlayerTabName(player);
+            if (callback != null) callback.run();
+        });
+    }
+
+    // Async version of getPlayerGroup
+    public void getPlayerGroupAsync(Player player, java.util.function.Consumer<String> callback) {
+        plugin.getConfigs().getPlayerDataAsync(player).thenAccept(playerData -> {
+            if (playerData == null) {
+                plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in getPlayerGroupAsync");
+                callback.accept("default");
+                return;
+            }
+            String group = playerData.getGroup();
+            // Store in cache for faster future lookups
+            playerGroupCache.put(player.getUniqueId(), group);
+            callback.accept(group);
+        });
+    }
+
+    // Deprecated sync version
     public boolean setPlayerGroup(Player player, String groupName) {
+        plugin.getLogger().warning("[DEPRECATED] setPlayerGroup called synchronously. Use setPlayerGroupAsync instead.");
         if (!groupPermissions.containsKey(groupName.toLowerCase())) {
             return false;
         }
-
         SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
+        if (playerData == null) {
+            plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in setPlayerGroup");
+            return false;
+        }
         playerData.setGroup(groupName.toLowerCase());
         plugin.getConfigs().savePlayerData(player);
-        
+        // Update cache
+        playerGroupCache.put(player.getUniqueId(), groupName.toLowerCase());
         // Update the player's tab list name
         updatePlayerTabName(player);
         return true;
     }
 
+    // Deprecated sync version
     public String getPlayerGroup(Player player) {
+        plugin.getLogger().warning("[DEPRECATED] getPlayerGroup called synchronously. Use getPlayerGroupAsync instead.");
+        UUID playerUUID = player.getUniqueId();
+        // Check cache first
+        if (playerGroupCache.containsKey(playerUUID)) {
+            String cachedGroup = playerGroupCache.get(playerUUID);
+            // Verify the cached data is still accurate
+            SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
+            if (playerData == null) {
+                plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in getPlayerGroup");
+                return "default";
+            }
+            String actualGroup = playerData.getGroup();
+            if (!cachedGroup.equals(actualGroup)) {
+                // Cache is out of date, update it
+                playerGroupCache.put(playerUUID, actualGroup);
+                return actualGroup;
+            }
+            return cachedGroup;
+        }
+        // If not in cache, get from PlayerData and cache it
         SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
-        return playerData.getGroup();
+        if (playerData == null) {
+            plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in getPlayerGroup");
+            return "default";
+        }
+        String group = playerData.getGroup();
+        // Store in cache for faster future lookups
+        playerGroupCache.put(playerUUID, group);
+        return group;
+    }
+
+    /**
+     * Removes a player from the group cache - should be called when a player logs out
+     * 
+     * @param player The player to remove from cache
+     */
+    public void clearPlayerCache(Player player) {
+        playerGroupCache.remove(player.getUniqueId());
     }
 
     public Set<String> getGroupPermissions(String groupName) {
@@ -299,10 +401,57 @@ public class GroupManager {
     }
 
     private void saveGroups() {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                groupsConfig.save(groupsFile);
+            } catch (IOException e) {
+                plugin.getLogger().severe("Could not save groups.yml: " + e.getMessage());
+            }
+        });
+    }
+    
+    /**
+     * Save groups synchronously - only use during server shutdown
+     */
+    public void saveGroupsSync() {
         try {
             groupsConfig.save(groupsFile);
         } catch (IOException e) {
             plugin.getLogger().severe("Could not save groups.yml: " + e.getMessage());
         }
+    }
+
+    /**
+     * Saves all data
+     */
+    public void saveAllData() {
+        if (groupsDirty) {
+            saveGroups();
+            groupsDirty = false;
+        }
+    }
+    
+    /**
+     * Saves all data synchronously - only use during server shutdown
+     */
+    public void saveAllDataSync() {
+        if (groupsDirty) {
+            saveGroupsSync();
+            groupsDirty = false;
+        }
+    }
+    
+    /**
+     * Reloads all group data from disk and clears caches
+     */
+    public void reload() {
+        // Save any pending changes
+        saveAllData();
+        
+        // Clear caches
+        playerGroupCache.clear();
+        
+        // Reload groups
+        loadGroups();
     }
 } 

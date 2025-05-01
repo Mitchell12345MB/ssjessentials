@@ -21,17 +21,17 @@ public class WelcomeManager {
     }
 
     public void loadConfig() {
-        enabled = plugin.getConfig().getBoolean("welcome.enabled", true);
-        showToReturningPlayers = plugin.getConfig().getBoolean("welcome.show_to_returning_players", false);
+        enabled = plugin.getConfigs().getBoolean("welcome.enabled", true);
+        showToReturningPlayers = plugin.getConfigs().getBoolean("welcome.show_to_returning_players", false);
         
         // Load and colorize private message
-        privateMessage = plugin.getConfig().getStringList("welcome.private_message")
+        privateMessage = plugin.getConfigs().getStringList("welcome.private_message")
             .stream()
             .map(line -> ChatColor.translateAlternateColorCodes('&', line))
             .collect(Collectors.toList());
 
         // Load and colorize broadcast message
-        broadcastMessage = plugin.getConfig().getStringList("welcome.broadcast_message")
+        broadcastMessage = plugin.getConfigs().getStringList("welcome.broadcast_message")
             .stream()
             .map(line -> ChatColor.translateAlternateColorCodes('&', line))
             .collect(Collectors.toList());
@@ -42,15 +42,17 @@ public class WelcomeManager {
 
         // Check if player is new or if we should show message to returning players
         if (!player.hasPlayedBefore() || showToReturningPlayers) {
-            // Send private message
-            for (String line : privateMessage) {
-                player.sendMessage(replacePlaceholders(line, player));
-            }
-
-            // Broadcast welcome message
+            // Broadcast welcome message first
             for (String line : broadcastMessage) {
                 Bukkit.broadcastMessage(replacePlaceholders(line, player));
             }
+
+            // Send private message after a short delay (1 tick)
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                for (String line : privateMessage) {
+                    player.sendMessage(replacePlaceholders(line, player));
+                }
+            }, 1L);
         }
     }
 
@@ -60,29 +62,29 @@ public class WelcomeManager {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        plugin.getConfig().set("welcome.enabled", enabled);
-        plugin.saveConfig();
+        plugin.getConfigs().set("welcome.enabled", enabled);
+        plugin.getConfigs().saveConfigs();
     }
 
     public void setShowToReturningPlayers(boolean show) {
         this.showToReturningPlayers = show;
-        plugin.getConfig().set("welcome.show_to_returning_players", show);
-        plugin.saveConfig();
+        plugin.getConfigs().set("welcome.show_to_returning_players", show);
+        plugin.getConfigs().saveConfigs();
     }
 
     public void setPrivateMessage(List<String> message) {
         this.privateMessage = message.stream()
             .map(line -> ChatColor.translateAlternateColorCodes('&', line))
             .collect(Collectors.toList());
-        plugin.getConfig().set("welcome.private_message", message);
-        plugin.saveConfig();
+        plugin.getConfigs().set("welcome.private_message", message);
+        plugin.getConfigs().saveConfigs();
     }
 
     public void setBroadcastMessage(List<String> message) {
         this.broadcastMessage = message.stream()
             .map(line -> ChatColor.translateAlternateColorCodes('&', line))
             .collect(Collectors.toList());
-        plugin.getConfig().set("welcome.broadcast_message", message);
-        plugin.saveConfig();
+        plugin.getConfigs().set("welcome.broadcast_message", message);
+        plugin.getConfigs().saveConfigs();
     }
 } 

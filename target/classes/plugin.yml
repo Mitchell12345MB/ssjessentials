@@ -1,7 +1,7 @@
 name: SSJEssentials
-version: 1
+version: 1.0.0
 main: com.sausaliens.SSJEssentials
-api-version: 1.17
+api-version: 1.21
 prefix: SSJEssentials
 authors: [ SauSAliens ]
 description: Simple essentials plugin
@@ -197,6 +197,11 @@ commands:
     description: Teleport to your previous location
     usage: /back [player]
     permission: ssjessentials.back
+  homes:
+    description: List your homes
+    usage: /homes
+    aliases: []
+    permission: ssjessentials.homes
 
 permissions:
   ssjessentials.default:
@@ -211,6 +216,11 @@ permissions:
       ssjessentials.home.list: true
       ssjessentials.sethome: true
       ssjessentials.back: true
+      ssjessentials.cooltext: true
+
+  ssjessentials.cooltext:
+    description: Allows players to use color codes in chat with the & symbol
+    default: op
 
   ssjessentials.mod:
     description: Moderator permissions
@@ -233,6 +243,9 @@ permissions:
       ssjessentials.invsee: true
       ssjessentials.socialspy: true
       ssjessentials.back.other: true
+      ssjessentials.banlist: true
+      ssjessentials.banhistory: true
+      ssjessentials.cooltext: true
 
   ssjessentials.admin:
     description: Admin permissions
@@ -400,4 +413,28 @@ permissions:
     default: op
   ssjessentials.back.other:
     description: Allows player to teleport to another player's previous location
+    default: op
+  ssjessentials.homes:
+    description: Allows players to list their homes
+    default: true
+  ssjessentials.teleport.nodelay:
+    description: Allows players to teleport without delays
+    default: op
+  ssjessentials.teleport.nocooldown:
+    description: Allows players to teleport without cooldowns
+    default: op
+  ssjessentials.homes.1:
+    description: Allows players to have 1 home
+    default: true
+  ssjessentials.homes.2:
+    description: Allows players to have 2 homes
+    default: op
+  ssjessentials.homes.3:
+    description: Allows players to have 3 homes
+    default: op
+  ssjessentials.homes.5:
+    description: Allows players to have 5 homes
+    default: op
+  ssjessentials.homes.10:
+    description: Allows players to have 10 homes
     default: op

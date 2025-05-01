@@ -39,19 +39,46 @@ public class AutoMessageManager {
     }
 
     private void loadConfig() {
-        if (!configFile.exists()) {
-            plugin.saveResource("automessages.yml", false);
+        try {
+            // Create default config if it doesn't exist
+            if (!configFile.exists()) {
+                plugin.saveResource("automessages.yml", false);
+            }
+            
+            // Load config from disk
+            config = YamlConfiguration.loadConfiguration(configFile);
+            
+            // Load settings
+            runWhileEmpty = config.getBoolean("run_while_server_is_empty", false);
+            displayOnUnEmpty = config.getBoolean("display_message_when_server_becomes_un_empty", true);
+            
+            // Load messages
+            messages.clear();
+            messages.addAll(config.getStringList("messages"));
+            
+            // Reset index to prevent out of bounds
+            currentIndex = 0;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to load auto messages config: " + e.getMessage());
+            e.printStackTrace();
         }
-        config = YamlConfiguration.loadConfiguration(configFile);
-        runWhileEmpty = config.getBoolean("run_while_server_is_empty", false);
-        displayOnUnEmpty = config.getBoolean("display_message_when_server_becomes_un_empty", true);
-        reloadMessages();
     }
 
     public void reloadMessages() {
-        messages.clear();
-        messages.addAll(config.getStringList("messages"));
+        // Save any pending changes first
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            plugin.getLogger().warning("Failed to save pending changes before reload: " + e.getMessage());
+        }
+        
+        // Reload the config from disk
+        loadConfig();
+        
+        // Restart the message task with new settings
         restartMessageTask();
+        
+        plugin.getLogger().info("Auto messages configuration reloaded successfully.");
     }
 
     private void startMessageTask() {

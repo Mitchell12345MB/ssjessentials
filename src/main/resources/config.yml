@@ -1,6 +1,6 @@
 settings:
   # Prefix for plugin messages
-  prefix: "&7[&bSSJ&7] "
+  prefix: "&7[&bSSJE&7] "
   
 # Flight Settings
 flight:
@@ -37,6 +37,21 @@ teleport:
 
   # Delay for using /warp
   teleport-warp-delay: 1000
+  
+  # Enable debug mode to log teleport activity
+  debug-mode: false
+  
+  # Teleport delay settings (in seconds)
+  # Set to 0 to disable delay
+  delays:
+    tp: 3       # Regular teleport
+    tpr: 5      # Random teleport
+    spawn: 3    # Spawn teleport
+    home: 5     # Home teleport
+    warp: 3     # Warp teleport
+  
+  # Cancel teleport if damaged
+  cancel-on-damage: true
 
 # Ban Settings
 ban:
@@ -60,6 +75,10 @@ home:
   max-homes-mod: 20
   # Maximum number of homes for ssjessentials.admin
   max-homes-admin: 1000
+  # Maximum number of homes for ssjessentials.vip
+  max-homes-vip: 5
+  # Maximum number of homes for ssjessentials.elite
+  max-homes-elite: 10
 
 
 # Permissions Settings

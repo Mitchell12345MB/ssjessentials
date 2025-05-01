@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.Set;
+
 public class TabListManager {
     private final SSJEssentials plugin;
     private BukkitTask updateTask;
@@ -17,6 +19,13 @@ public class TabListManager {
     private Plugin cachedSSJPlugin;
     private long lastPluginCheck;
     private static final long PLUGIN_CHECK_INTERVAL = 5000; // Check every 5 seconds
+    private static final Set<String> POSSIBLE_SSJ_NAMES = Set.of(
+        "SuperSaiyan",
+        "SuperSaiyan-1",
+        "SuperSaiyan1",
+        "SuperSaiyan (1)"
+    );
+    private static final int MIN_UPDATE_INTERVAL = 1;
 
     public TabListManager(SSJEssentials plugin) {
         this.plugin = plugin;
@@ -28,25 +37,30 @@ public class TabListManager {
     }
 
     public void loadConfig() {
-        enabled = plugin.getConfig().getBoolean("tablist.enabled", true);
-        header = ChatColor.translateAlternateColorCodes('&', 
-            plugin.getConfig().getString("tablist.header", "&b&lWelcome to &e&lmc.saus-it.io &b&l| &e&lSSJPL"));
-        footer = ChatColor.translateAlternateColorCodes('&', 
-            plugin.getConfig().getString("tablist.footer", "&7Online Players: &f%online%/%max%"));
-        updateInterval = plugin.getConfig().getInt("tablist.update-interval", 20);
+        try {
+            enabled = plugin.getConfigs().getBoolean("tablist.enabled", true);
+            header = ChatColor.translateAlternateColorCodes('&', 
+                plugin.getConfigs().getString("tablist.header", "&b&lWelcome to &e&lmc.saus-it.io &b&l| &e&lSSJPL"));
+            footer = ChatColor.translateAlternateColorCodes('&', 
+                plugin.getConfigs().getString("tablist.footer", "&7Online Players: &f%online%/%max%"));
+            
+            // Validate update interval
+            updateInterval = Math.max(MIN_UPDATE_INTERVAL, 
+                plugin.getConfigs().getInt("tablist.update-interval", 20));
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to load TabList configuration: " + e.getMessage());
+            // Set default values
+            enabled = true;
+            header = "&b&lWelcome to &e&lmc.saus-it.io &b&l| &e&lSSJPL";
+            footer = "&7Online Players: &f%online%/%max%";
+            updateInterval = 20;
+        }
     }
 
     private Plugin checkSSJPlugin() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastPluginCheck > PLUGIN_CHECK_INTERVAL) {
-            String[] possibleNames = {
-                "SuperSaiyan",
-                "SuperSaiyan-1",
-                "SuperSaiyan1",
-                "SuperSaiyan (1)"
-            };
-
-            for (String name : possibleNames) {
+            for (String name : POSSIBLE_SSJ_NAMES) {
                 Plugin found = Bukkit.getPluginManager().getPlugin(name);
                 if (found != null) {
                     cachedSSJPlugin = found;
@@ -58,23 +72,31 @@ public class TabListManager {
         return cachedSSJPlugin;
     }
 
+    private String processFooter() {
+        String processedFooter = footer
+            .replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()))
+            .replace("%max%", String.valueOf(Bukkit.getMaxPlayers()));
+
+        Plugin ssjPlugin = checkSSJPlugin();
+        String ssjStatus = (ssjPlugin != null && ssjPlugin.isEnabled()) ? "§aWorking" : "§cUpdating";
+        return processedFooter + " §8| §7SSJ Plugin: " + ssjStatus;
+    }
+
     private void startUpdateTask() {
         if (updateTask != null) {
             updateTask.cancel();
         }
 
         updateTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            String processedFooter = footer
-                .replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()))
-                .replace("%max%", String.valueOf(Bukkit.getMaxPlayers()));
-
-            Plugin ssjPlugin = checkSSJPlugin();
-            String ssjStatus = (ssjPlugin != null && ssjPlugin.isEnabled()) ? "§aWorking" : "§cUpdating";
-            processedFooter += " §8| §7SSJ Plugin: " + ssjStatus;
-
+            String processedFooter = processFooter();
             for (Player player : Bukkit.getOnlinePlayers()) {
-                player.setPlayerListHeader(header);
-                player.setPlayerListFooter(processedFooter);
+                try {
+                    player.setPlayerListHeader(header);
+                    player.setPlayerListFooter(processedFooter);
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Failed to update tablist for player " + 
+                        player.getName() + ": " + e.getMessage());
+                }
             }
         }, 0L, updateInterval);
     }
@@ -88,8 +110,13 @@ public class TabListManager {
             updateTask = null;
             // Clear tab list for all players
             for (Player player : Bukkit.getOnlinePlayers()) {
-                player.setPlayerListHeader("");
-                player.setPlayerListFooter("");
+                try {
+                    player.setPlayerListHeader("");
+                    player.setPlayerListFooter("");
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Failed to clear tablist for player " + 
+                        player.getName() + ": " + e.getMessage());
+                }
             }
         }
     }
@@ -97,42 +124,32 @@ public class TabListManager {
     public void updatePlayer(Player player) {
         if (!enabled) return;
         
-        String processedFooter = footer
-            .replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()))
-            .replace("%max%", String.valueOf(Bukkit.getMaxPlayers()));
-
-        Plugin ssjPlugin = checkSSJPlugin();
-        String ssjStatus = (ssjPlugin != null && ssjPlugin.isEnabled()) ? "§aWorking" : "§cUpdating";
-        processedFooter += " §8| §7SSJ Plugin: " + ssjStatus;
-
-        player.setPlayerListHeader(header);
-        player.setPlayerListFooter(processedFooter);
+        try {
+            player.setPlayerListHeader(header);
+            player.setPlayerListFooter(processFooter());
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to update tablist for player " + 
+                player.getName() + ": " + e.getMessage());
+        }
     }
 
     public void setHeader(String header) {
         this.header = ChatColor.translateAlternateColorCodes('&', header);
-        plugin.getConfig().set("tablist.header", header);
-        plugin.saveConfig();
+        plugin.getConfigs().set("tablist.header", header);
+        plugin.getConfigs().saveConfigs();
         if (enabled) {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                player.setPlayerListHeader(this.header);
+                updatePlayer(player);
             }
         }
     }
 
     public void setFooter(String footer) {
         this.footer = ChatColor.translateAlternateColorCodes('&', footer);
-        plugin.getConfig().set("tablist.footer", footer);
-        plugin.saveConfig();
+        plugin.getConfigs().set("tablist.footer", footer);
+        plugin.getConfigs().saveConfigs();
         if (enabled) {
-            String processedFooter = this.footer
-                .replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()))
-                .replace("%max%", String.valueOf(Bukkit.getMaxPlayers()));
-
-            Plugin ssjPlugin = checkSSJPlugin();
-            String ssjStatus = (ssjPlugin != null && ssjPlugin.isEnabled()) ? "§aWorking" : "§cUpdating";
-            processedFooter += " §8| §7SSJ Plugin: " + ssjStatus;
-
+            String processedFooter = processFooter();
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.setPlayerListFooter(processedFooter);
             }

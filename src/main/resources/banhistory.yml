@@ -1,0 +1,15 @@
+# Ban History File
+# This file tracks the history of player unbans
+
+# Structure:
+# unbans:
+#   <player-uuid>:
+#     0:
+#       player_name: "PlayerName"
+#       reason: "Original ban reason"
+#       source: "Admin who banned"
+#       ban_date: timestamp
+#       unban_date: timestamp
+#       unbanned_by: "Admin who unbanned"
+
+unbans: {} 

@@ -56,4 +56,12 @@ public class SpawnConfig {
             plugin.getLogger().severe("Could not save spawn location!");
         }
     }
+    
+    /**
+     * Reloads spawn configuration from disk
+     */
+    public void reload() {
+        loadConfig();
+        plugin.getLogger().info("Spawn configuration reloaded");
+    }
 } 

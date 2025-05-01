@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -62,7 +63,6 @@ public class WarpSignListener implements Listener {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @EventHandler
     public void onSignClick(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
@@ -73,8 +73,8 @@ public class WarpSignListener implements Listener {
         if (!(block.getState() instanceof Sign)) return;
 
         Sign sign = (Sign) block.getState();
-        String firstLine = ChatColor.stripColor(sign.getLine(0));
-        String secondLine = ChatColor.stripColor(sign.getLine(1));
+        String firstLine = ChatColor.stripColor(sign.getSide(Side.FRONT).getLine(0));
+        String secondLine = ChatColor.stripColor(sign.getSide(Side.FRONT).getLine(1));
 
         if (firstLine.equals("[Warp]")) {
             event.setCancelled(true);
@@ -100,14 +100,13 @@ public class WarpSignListener implements Listener {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @EventHandler
     public void onSignBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         if (!(block.getState() instanceof Sign)) return;
 
         Sign sign = (Sign) block.getState();
-        String firstLine = ChatColor.stripColor(sign.getLine(0));
+        String firstLine = ChatColor.stripColor(sign.getSide(Side.FRONT).getLine(0));
 
         if (firstLine.equals("[Warp]")) {
             Player player = event.getPlayer();

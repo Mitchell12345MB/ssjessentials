@@ -6,7 +6,6 @@ import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import com.sausaliens.SSJEConfig.SSJConfigs;
 import org.bukkit.entity.Player;
 
 public class PlayerJoinListener implements Listener {
@@ -30,25 +29,36 @@ public class PlayerJoinListener implements Listener {
         // Handle welcome message
         plugin.getWelcomeManager().handlePlayerJoin(player);
         
-        // Set default group for new players
+        // Set default group for new players (async)
         if (!player.hasPlayedBefore()) {
-            plugin.getGroupManager().setPlayerGroup(player, "default");
+            plugin.getGroupManager().setPlayerGroupAsync(player, "default", null);
         }
         
         // Update tab list
         plugin.getTabListManager().updatePlayer(player);
         
-        // Get player data
-        SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
-        
-        // If player has no group or their group doesn't exist, set them to default
-        String currentGroup = playerData.getGroup();
-        if (currentGroup == null || currentGroup.isEmpty() || 
-            !plugin.getGroupManager().getGroups().contains(currentGroup.toLowerCase())) {
-            plugin.getGroupManager().setPlayerGroup(player, "default");
+        if (plugin.getConfigs() == null) {
+            plugin.getLogger().warning("SSJConfigs is null for player: " + player.getName());
+            return;
         }
-        
-        // Update the player's tab list name with their group prefix
-        plugin.getGroupManager().updatePlayerTabName(player);
+
+        // Use async player data API
+        plugin.getConfigs().getPlayerDataAsync(player).thenAccept(playerData -> {
+            if (playerData == null) {
+                plugin.getLogger().warning("PlayerData is null for " + player.getName() + " after async load");
+                return;
+            }
+            // If player has no group or their group doesn't exist, set them to default (async)
+            String currentGroup = playerData.getGroup();
+            if (currentGroup == null || currentGroup.isEmpty() || 
+                !plugin.getGroupManager().getGroups().contains(currentGroup.toLowerCase())) {
+                plugin.getGroupManager().setPlayerGroupAsync(player, "default", () -> {
+                    plugin.getGroupManager().updatePlayerTabName(player);
+                });
+            } else {
+                // Update the player's tab list name with their group prefix
+                plugin.getGroupManager().updatePlayerTabName(player);
+            }
+        });
     }
 } 

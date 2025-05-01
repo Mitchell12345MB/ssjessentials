@@ -91,11 +91,9 @@ public class GroupCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ChatColor.RED + "Player " + args[1] + " not found!");
                     return true;
                 }
-                if (groupManager.setPlayerGroup(target, args[2])) {
+                groupManager.setPlayerGroupAsync(target, args[2], () -> {
                     sender.sendMessage(ChatColor.GREEN + "Player " + target.getName() + " added to group " + args[2] + "!");
-                } else {
-                    sender.sendMessage(ChatColor.RED + "Group " + args[2] + " doesn't exist!");
-                }
+                });
                 break;
 
             case "list":

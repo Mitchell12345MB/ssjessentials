@@ -81,6 +81,18 @@ public class BackCommand implements CommandExecutor, TabCompleter, Listener {
         player.sendMessage(formatMessage("§aTeleported to your previous location!"));
         return true;
     }
+    
+    /**
+     * Manually store a player's current location
+     * 
+     * @param player The player whose location to store
+     * @param location The location to store
+     */
+    public void storeLastLocation(Player player, Location location) {
+        if (player != null && location != null) {
+            lastLocations.put(player.getUniqueId(), location.clone());
+        }
+    }
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {

@@ -9,7 +9,6 @@ import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import com.sausaliens.SSJEssentials;
-import com.sausaliens.SSJEConfig.SSJConfigs;
 
 import org.bukkit.plugin.Plugin;
 
@@ -46,16 +45,21 @@ public class PlayerFlightListener implements Listener {
             return;
         }
         
-        SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
-        if (!playerData.isFlying()) {
-            event.setCancelled(true);
-            player.setAllowFlight(false);
-            player.setFlying(false);
-        } else {
-            event.setCancelled(false);
-            player.setAllowFlight(true);
-            player.setFlying(true);
-        }
+        plugin.getConfigs().getPlayerDataAsync(player).thenAccept(playerData -> {
+            if (playerData == null) {
+                plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in flight toggle");
+                return;
+            }
+            if (!playerData.isFlying()) {
+                event.setCancelled(true);
+                player.setAllowFlight(false);
+                player.setFlying(false);
+            } else {
+                event.setCancelled(false);
+                player.setAllowFlight(true);
+                player.setFlying(true);
+            }
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -66,31 +70,39 @@ public class PlayerFlightListener implements Listener {
         if (gameMode == GameMode.CREATIVE || gameMode == GameMode.SPECTATOR) {
             return;
         }
-
-        if (plugin.getConfigs().getPlayerData(player).isFlying()) {
-            player.setAllowFlight(true);
-        } else {
-            player.setAllowFlight(false);
-            player.setFlying(false);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        SSJConfigs.PlayerData playerData = plugin.getConfigs().getPlayerData(player);
-        
-        // Restore gamemode
-        player.setGameMode(playerData.getGameMode());
-        
-        // Restore flight status
-        if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR) {
+        plugin.getConfigs().getPlayerDataAsync(player).thenAccept(playerData -> {
+            if (playerData == null) {
+                plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in gamemode change");
+                return;
+            }
             if (playerData.isFlying()) {
                 player.setAllowFlight(true);
             } else {
                 player.setAllowFlight(false);
                 player.setFlying(false);
             }
-        }
+        });
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        plugin.getConfigs().getPlayerDataAsync(player).thenAccept(playerData -> {
+            if (playerData == null) {
+                plugin.getLogger().warning("PlayerData is null for " + player.getName() + " in join event");
+                return;
+            }
+            // Restore gamemode
+            player.setGameMode(playerData.getGameMode());
+            // Restore flight status
+            if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR) {
+                if (playerData.isFlying()) {
+                    player.setAllowFlight(true);
+                } else {
+                    player.setAllowFlight(false);
+                    player.setFlying(false);
+                }
+            }
+        });
     }
 }
